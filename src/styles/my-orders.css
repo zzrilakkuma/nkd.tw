@@ -214,9 +214,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
 }
 
 .payment-notice,
+.payment-submitted-notice,
 .processing-notice,
 .shipped-notice,
 .delivered-notice {
@@ -230,6 +232,12 @@
   background: #fff3cd;
   color: #856404;
   border: 1px solid #ffeaa7;
+}
+
+.payment-submitted-notice {
+  background: #e7f3ff;
+  color: #0c5460;
+  border: 1px solid #b8daff;
 }
 
 .processing-notice {
@@ -248,6 +256,294 @@
   background: #d1ecf1;
   color: #0c5460;
   border: 1px solid #b8daff;
+}
+
+/* 付款區域樣式 */
+.payment-section {
+  width: 100%;
+  text-align: center;
+}
+
+.bank-transfer-info {
+  margin-top: 15px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: left;
+}
+
+.bank-transfer-info h4 {
+  margin: 0 0 15px 0;
+  color: #495057;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.bank-details-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.bank-row-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.bank-row-compact:last-of-type:not(.highlight) {
+  border-bottom: none;
+}
+
+.bank-row-compact .label {
+  font-weight: 500;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.bank-row-compact .value {
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.bank-row-compact .account-number {
+  font-family: monospace;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.bank-row-compact.highlight {
+  background: #e7f3ff;
+  border: 1px solid #b8daff;
+  border-radius: 4px;
+  padding: 12px 15px;
+  margin: 10px 0 0 0;
+}
+
+.bank-row-compact.highlight .label {
+  color: #0c5460;
+  font-weight: 600;
+}
+
+.bank-row-compact.highlight .value {
+  color: #0c5460;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.transfer-note {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-left: 3px solid #6c757d;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #6c757d;
+  line-height: 1.4;
+}
+
+.transfer-note strong {
+  font-family: monospace;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* 已完成轉帳按鈕 */
+.payment-complete-section {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.payment-complete-btn {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.payment-complete-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* 彈窗樣式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 20px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #f8f9fa;
+  color: #495057;
+}
+
+.modal-body {
+  padding: 25px;
+}
+
+.order-info-modal {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.order-info-modal p {
+  margin: 8px 0;
+  color: #495057;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.last5digits-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: monospace;
+  letter-spacing: 2px;
+  text-align: center;
+  transition: border-color 0.3s ease;
+  background: white;
+  color: #495057;
+  box-sizing: border-box;
+}
+
+.last5digits-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.last5digits-input.error {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+.input-help {
+  display: block;
+  margin-top: 5px;
+  color: #6c757d;
+  font-size: 12px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px 25px;
+  border-top: 1px solid #e9ecef;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:disabled {
+  background: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
 }
 
 /* 響應式設計 */
@@ -288,6 +584,10 @@
   }
 
   .shipping-details {
+    padding: 15px;
+  }
+
+  .bank-transfer-info {
     padding: 15px;
   }
 }

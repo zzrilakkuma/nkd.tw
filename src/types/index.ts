@@ -33,10 +33,18 @@ export interface Order {
   status: OrderStatus;
   createdAt: string;
   shippingInfo: ShippingInfo;
+  paymentInfo?: PaymentInfo;
+}
+
+// 付款資訊類型
+export interface PaymentInfo {
+  last5Digits: string;
+  completedAt: string;
 }
 
 export enum OrderStatus {
   PENDING = 'pending',
+  PAYMENT_SUBMITTED = 'payment_submitted',
   CONFIRMED = 'confirmed',
   SHIPPED = 'shipped',
   DELIVERED = 'delivered',

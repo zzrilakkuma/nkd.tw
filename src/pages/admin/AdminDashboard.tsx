@@ -34,7 +34,8 @@ const AdminDashboard: React.FC = () => {
 
   const getStatusText = (status: string) => {
     const statusMap = {
-      pending: '待處理',
+      pending: '待付款',
+      payment_submitted: '待確認',
       confirmed: '已確認',
       shipped: '已出貨',
       delivered: '已送達',
@@ -46,6 +47,7 @@ const AdminDashboard: React.FC = () => {
   const getStatusClass = (status: string) => {
     const classMap = {
       pending: 'status-pending',
+      payment_submitted: 'status-payment-submitted',
       confirmed: 'status-confirmed',
       shipped: 'status-shipped',
       delivered: 'status-delivered',
@@ -135,6 +137,16 @@ const AdminDashboard: React.FC = () => {
                         <span className={`status ${getStatusClass(order.status)}`}>
                           {getStatusText(order.status)}
                         </span>
+                        {order.paymentInfo && (
+                          <div className="payment-info">
+                            <small>
+                              轉帳末五碼: <strong>{order.paymentInfo.last5Digits}</strong>
+                            </small>
+                            <small>
+                              提交時間: {formatDate(order.paymentInfo.completedAt)}
+                            </small>
+                          </div>
+                        )}
                       </td>
                       <td>
                         <div className="status-controls">
@@ -143,7 +155,8 @@ const AdminDashboard: React.FC = () => {
                             onChange={(e) => updateOrderStatus(order.id, e.target.value as OrderStatus)}
                             className="status-select"
                           >
-                            <option value={OrderStatus.PENDING}>待處理</option>
+                            <option value={OrderStatus.PENDING}>待付款</option>
+                            <option value={OrderStatus.PAYMENT_SUBMITTED}>待確認</option>
                             <option value={OrderStatus.CONFIRMED}>已確認</option>
                             <option value={OrderStatus.SHIPPED}>已出貨</option>
                             <option value={OrderStatus.DELIVERED}>已送達</option>

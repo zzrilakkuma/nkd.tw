@@ -9,6 +9,18 @@ const OrderConfirm: React.FC = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
 
+  const getStatusText = (status: string) => {
+    const statusMap = {
+      pending: '待付款',
+      payment_submitted: '待確認',
+      confirmed: '已確認',
+      shipped: '已出貨',
+      delivered: '已送達',
+      cancelled: '已取消'
+    };
+    return statusMap[status as keyof typeof statusMap] || status;
+  };
+
   useEffect(() => {
     const orderData = location.state?.order;
     if (!orderData) {
@@ -49,7 +61,7 @@ const OrderConfirm: React.FC = () => {
               </div>
               <div className="info-row">
                 <span className="label">訂單狀態:</span>
-                <span className="value status">待處理</span>
+                <span className="value status">{getStatusText(order.status)}</span>
               </div>
             </div>
 

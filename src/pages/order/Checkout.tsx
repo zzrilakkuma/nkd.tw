@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import { CheckoutForm, CartItem } from '../../types';
+import { CheckoutForm, CartItem, OrderStatus } from '../../types';
 import { formatPrice, calculateCartTotal, generateId } from '../../utils';
 import '../../styles/orders.css';
 
@@ -54,7 +54,7 @@ const Checkout: React.FC = () => {
       userId: currentUser.id,
       items: cartItems,
       totalAmount,
-      status: 'pending',
+      status: OrderStatus.PENDING,
       createdAt: new Date().toISOString(),
       shippingInfo: {
         name: data.name,

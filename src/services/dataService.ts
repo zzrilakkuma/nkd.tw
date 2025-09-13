@@ -11,7 +11,7 @@ export const initializeAppData = () => {
   if (!localStorage.getItem('users')) {
     const defaultAdmin = {
       ...mockUsers[0],
-      password: 'admin123' // 預設密碼
+      password: 'password' // 預設密碼
     };
     localStorage.setItem('users', JSON.stringify([defaultAdmin]));
   }

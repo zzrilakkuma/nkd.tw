@@ -132,6 +132,13 @@ export const mockUsers: User[] = [
     username: 'admin',
     createdAt: '2024-01-01T00:00:00Z',
     isAdmin: true
+  },
+  {
+    id: '2',
+    email: 'customer@gmail.com',
+    username: 'customer',
+    createdAt: '2024-01-15T10:30:00Z',
+    isAdmin: false
   }
 ];
 

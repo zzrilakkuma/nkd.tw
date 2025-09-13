@@ -23,7 +23,27 @@ const Login: React.FC = () => {
 
   const onSubmit = (data: LoginForm) => {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
+    console.log('Available users:', users);
+    console.log('Users count:', users.length);
+    console.log('Login attempt:', data);
+
+    // 如果沒有用戶，手動創建管理員
+    if (users.length === 0) {
+      console.log('No users found, creating admin...');
+      const adminUser = {
+        id: '1',
+        email: 'admin@hookah-store.com',
+        username: 'admin',
+        createdAt: '2024-01-01T00:00:00Z',
+        isAdmin: true,
+        password: 'password'
+      };
+      localStorage.setItem('users', JSON.stringify([adminUser]));
+      users.push(adminUser);
+    }
+
     const user = users.find((u: any) => u.email === data.email && u.password === data.password);
+    console.log('Found user:', user);
 
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
