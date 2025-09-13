@@ -1,0 +1,455 @@
+/* 結帳頁面樣式 */
+.checkout-page {
+  padding: 40px 0;
+}
+
+.checkout-page h1 {
+  text-align: center;
+  margin-bottom: 40px;
+  color: #2c3e50;
+  font-size: 36px;
+}
+
+.checkout-content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 40px;
+}
+
+.checkout-form {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-form h2 {
+  color: #2c3e50;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #f8f9fa;
+  padding-bottom: 10px;
+}
+
+.place-order-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  padding: 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+}
+
+.place-order-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+}
+
+.order-summary {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+}
+
+.order-summary h2 {
+  color: #2c3e50;
+  margin: 0 0 20px 0;
+  border-bottom: 2px solid #f8f9fa;
+  padding-bottom: 10px;
+}
+
+.order-items {
+  margin-bottom: 25px;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.order-item:last-child {
+  border-bottom: none;
+}
+
+.item-name {
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.item-price {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.order-total {
+  border-top: 2px solid #f8f9fa;
+  padding-top: 20px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 4px 0;
+}
+
+.total-row.final {
+  font-weight: 700;
+  font-size: 18px;
+  color: #2c3e50;
+  border-top: 1px solid #e9ecef;
+  margin-top: 15px;
+  padding-top: 15px;
+}
+
+/* 訂單確認頁面樣式 */
+.order-confirm-page {
+  padding: 40px 0;
+}
+
+.order-confirm-content {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.success-icon {
+  font-size: 80px;
+  margin-bottom: 30px;
+}
+
+.order-confirm-content h1 {
+  color: #28a745;
+  margin-bottom: 20px;
+  font-size: 36px;
+}
+
+.order-message {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 40px;
+}
+
+.order-details {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  margin-bottom: 40px;
+}
+
+.order-details h2,
+.order-details h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.order-info {
+  margin-bottom: 30px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.info-row .label {
+  font-weight: 600;
+  color: #555;
+}
+
+.info-row .value {
+  color: #2c3e50;
+}
+
+.info-row .status {
+  background: #fff3cd;
+  color: #856404;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.shipping-info {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.shipping-info p {
+  margin: 8px 0;
+  color: #2c3e50;
+}
+
+.next-steps {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.next-steps h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.payment-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 14px 28px;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.payment-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.my-orders-btn {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  padding: 14px 28px;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.my-orders-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.continue-shopping-btn {
+  background: #6c757d;
+  color: white;
+  padding: 14px 28px;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.continue-shopping-btn:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+
+/* 付款頁面樣式 */
+.payment-page {
+  padding: 40px 0;
+}
+
+.payment-page h1 {
+  text-align: center;
+  margin-bottom: 40px;
+  color: #2c3e50;
+  font-size: 36px;
+}
+
+.payment-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.order-basic-info {
+  margin-bottom: 30px;
+}
+
+.order-items-summary {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.order-items-summary h3 {
+  margin: 0 0 15px 0;
+  color: #2c3e50;
+}
+
+.item-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.payment-info {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.payment-info h2 {
+  color: #2c3e50;
+  margin: 0 0 30px 0;
+  border-bottom: 2px solid #f8f9fa;
+  padding-bottom: 10px;
+}
+
+.bank-info-card {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  border-left: 4px solid #667eea;
+}
+
+.bank-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 4px 0;
+}
+
+.bank-row .label {
+  font-weight: 600;
+  color: #555;
+}
+
+.bank-row .value {
+  color: #2c3e50;
+}
+
+.bank-row.highlight {
+  background: #667eea;
+  color: white;
+  margin: 15px -25px 0;
+  padding: 12px 25px;
+  border-radius: 0 0 8px 8px;
+}
+
+.bank-row.highlight .label,
+.bank-row.highlight .value {
+  color: white;
+}
+
+.account-number {
+  font-family: monospace;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.payment-instructions {
+  margin-bottom: 30px;
+}
+
+.payment-instructions h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.payment-instructions ul {
+  list-style-position: outside;
+  padding-left: 20px;
+}
+
+.payment-instructions li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.payment-notice {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.payment-notice h4 {
+  color: #856404;
+  margin: 0 0 10px 0;
+}
+
+.payment-notice p {
+  color: #856404;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.payment-actions {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.complete-btn {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.complete-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+/* 響應式設計 */
+@media (max-width: 992px) {
+  .checkout-content,
+  .payment-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .order-summary {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .action-buttons,
+  .payment-actions {
+    flex-direction: column;
+  }
+
+  .payment-btn,
+  .continue-shopping-btn,
+  .complete-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .bank-info-card {
+    padding: 20px;
+  }
+
+  .bank-row.highlight {
+    margin: 15px -20px 0;
+    padding: 12px 20px;
+  }
+}

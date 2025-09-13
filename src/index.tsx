@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { initializeAppData } from './services/dataService';
+
+// 初始化應用資料
+initializeAppData();
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
