@@ -1,20 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import Slider from 'react-slick';
 import { Product } from '../../types';
-import { mockProducts } from '../../services/mockData';
+import { productsAPI } from '../../services/api';
 import { formatPrice } from '../../utils';
 import '../../styles/products.css';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
 const Products: React.FC = () => {
-  const [products] = useState<Product[]>(mockProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState<any[]>(() => {
     return JSON.parse(localStorage.getItem('cart') || '[]');
   });
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('全部');
+
+  // 從 API 獲取商品
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await productsAPI.getAll();
+        setProducts(data);
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   // 取得所有分類
   const categories = ['全部', ...Array.from(new Set(products.map(p => p.category)))];
@@ -126,8 +143,17 @@ const Products: React.FC = () => {
           ))}
         </div>
 
-        <div className="products-grid">
-          {filteredProducts.map(product => (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', fontSize: '18px', color: '#666' }}>
+            載入商品中...
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px', fontSize: '18px', color: '#666' }}>
+            目前沒有商品
+          </div>
+        ) : (
+          <div className="products-grid">
+            {filteredProducts.map(product => (
             <div key={product.id} className="product-card">
               <div className="product-image">
                 <img src={product.image} alt={product.name} onError={(e) => {
@@ -158,7 +184,8 @@ const Products: React.FC = () => {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Modal */}

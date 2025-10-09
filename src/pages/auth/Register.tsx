@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Link, useNavigate } from 'react-router-dom';
 import { RegisterForm } from '../../types';
-import { generateId } from '../../utils';
+import { authAPI } from '../../services/api';
 
 const schema = yup.object({
   username: yup.string().min(2, '使用者名稱至少需要 2 個字元').required('使用者名稱為必填'),
@@ -17,6 +17,7 @@ const schema = yup.object({
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -26,28 +27,30 @@ const Register: React.FC = () => {
     resolver: yupResolver(schema)
   });
 
-  const onSubmit = (data: RegisterForm) => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
+  const onSubmit = async (data: RegisterForm) => {
+    setLoading(true);
+    try {
+      const response = await authAPI.register({
+        email: data.email,
+        username: data.username,
+        password: data.password
+      });
 
-    if (users.find((u: any) => u.email === data.email)) {
-      setError('email', { message: '此電子郵件已被註冊' });
-      return;
+      // 儲存使用者資訊和 token
+      const userData = {
+        ...response.user,
+        token: response.access_token
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      navigate('/');
+    } catch (error: any) {
+      console.error('Register error:', error);
+      const errorMessage = error.response?.data?.detail || '註冊失敗，請稍後再試';
+      setError('root', { message: errorMessage });
+    } finally {
+      setLoading(false);
     }
-
-    const newUser = {
-      id: generateId(),
-      username: data.username,
-      email: data.email,
-      password: data.password,
-      createdAt: new Date().toISOString(),
-      isAdmin: false
-    };
-
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    localStorage.setItem('user', JSON.stringify(newUser));
-
-    navigate('/products');
   };
 
   return (
@@ -100,7 +103,11 @@ const Register: React.FC = () => {
             {errors.confirmPassword && <span className="error-message">{errors.confirmPassword.message}</span>}
           </div>
 
-          <button type="submit" className="submit-btn">註冊</button>
+          {errors.root && <div className="error-message">{errors.root.message}</div>}
+
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? '註冊中...' : '註冊'}
+          </button>
         </form>
 
         <div className="auth-links">

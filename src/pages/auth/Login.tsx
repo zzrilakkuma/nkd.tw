@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Link, useNavigate } from 'react-router-dom';
 import { LoginForm } from '../../types';
+import { authAPI } from '../../services/api';
 
 const schema = yup.object({
   email: yup.string().email('請輸入有效的電子郵件').required('電子郵件為必填'),
@@ -12,6 +13,7 @@ const schema = yup.object({
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -21,35 +23,25 @@ const Login: React.FC = () => {
     resolver: yupResolver(schema)
   });
 
-  const onSubmit = (data: LoginForm) => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    console.log('Available users:', users);
-    console.log('Users count:', users.length);
-    console.log('Login attempt:', data);
+  const onSubmit = async (data: LoginForm) => {
+    setLoading(true);
+    try {
+      const response = await authAPI.login(data);
 
-    // 如果沒有用戶，手動創建管理員
-    if (users.length === 0) {
-      console.log('No users found, creating admin...');
-      const adminUser = {
-        id: '1',
-        email: 'admin@hookah-store.com',
-        username: 'admin',
-        createdAt: '2024-01-01T00:00:00Z',
-        isAdmin: true,
-        password: 'password'
+      // 儲存使用者資訊和 token
+      const userData = {
+        ...response.user,
+        token: response.access_token
       };
-      localStorage.setItem('users', JSON.stringify([adminUser]));
-      users.push(adminUser);
-    }
+      localStorage.setItem('user', JSON.stringify(userData));
 
-    const user = users.find((u: any) => u.email === data.email && u.password === data.password);
-    console.log('Found user:', user);
-
-    if (user) {
-      localStorage.setItem('user', JSON.stringify(user));
-      navigate('/products');
-    } else {
-      setError('root', { message: '電子郵件或密碼錯誤' });
+      navigate('/');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      const errorMessage = error.response?.data?.detail || '登入失敗，請檢查您的電子郵件和密碼';
+      setError('root', { message: errorMessage });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -83,7 +75,9 @@ const Login: React.FC = () => {
 
           {errors.root && <div className="error-message">{errors.root.message}</div>}
 
-          <button type="submit" className="submit-btn">登入</button>
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? '登入中...' : '登入'}
+          </button>
         </form>
 
         <div className="auth-links">
