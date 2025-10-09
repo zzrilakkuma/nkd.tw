@@ -59,7 +59,6 @@ const Header: React.FC = () => {
 
           <nav className="nav-left desktop-nav">
             <Link to="/" className="nav-link">首頁</Link>
-            <Link to="/products" className="nav-link">商品</Link>
           </nav>
         </div>
 
@@ -124,9 +123,6 @@ const Header: React.FC = () => {
           <div className="mobile-menu">
             <Link to="/" className="mobile-menu-item" onClick={() => setMobileMenuOpen(false)}>
               首頁
-            </Link>
-            <Link to="/products" className="mobile-menu-item" onClick={() => setMobileMenuOpen(false)}>
-              商品
             </Link>
             {currentUser ? (
               <>

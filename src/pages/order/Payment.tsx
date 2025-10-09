@@ -157,7 +157,7 @@ const Payment: React.FC = () => {
         </div>
 
         <div className="payment-actions">
-          <Link to="/products" className="continue-shopping-btn">
+          <Link to="/" className="continue-shopping-btn">
             稍後付款
           </Link>
           <button

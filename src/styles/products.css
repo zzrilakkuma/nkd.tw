@@ -1,16 +1,181 @@
 /* 商品頁面樣式 */
 .products-page {
-  padding: 40px 0;
+  padding: 0 0 40px 0;
   background: #ffffff;
   min-height: calc(100vh - 80px);
 }
 
-.products-page h1 {
-  text-align: center;
-  margin-bottom: 40px;
-  color: #ffffff;
-  font-size: 36px;
-  font-weight: 700;
+/* Carousel Banner */
+.carousel-wrapper {
+  width: 100%;
+  margin-bottom: 0;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 3 / 2;
+}
+
+.carousel-slide {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carousel-wrapper .slick-slider {
+  height: 100%;
+}
+
+.carousel-wrapper .slick-list,
+.carousel-wrapper .slick-track {
+  height: 100%;
+}
+
+/* Slick Carousel 自訂樣式 */
+.carousel-wrapper .slick-dots {
+  bottom: 25px;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+}
+
+.carousel-wrapper .slick-dots li {
+  margin: 0;
+  width: auto;
+  height: auto;
+}
+
+.carousel-wrapper .slick-dots li button {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+}
+
+.carousel-wrapper .slick-dots li button:before {
+  font-size: 12px;
+  color: white;
+  opacity: 0.6;
+  width: 12px;
+  height: 12px;
+  line-height: 12px;
+}
+
+.carousel-wrapper .slick-dots li.slick-active button:before {
+  color: white;
+  opacity: 1;
+  font-size: 14px;
+}
+
+.carousel-wrapper .slick-prev,
+.carousel-wrapper .slick-next {
+  width: 50px;
+  height: 50px;
+  z-index: 1;
+}
+
+.carousel-wrapper .slick-prev {
+  left: 20px;
+}
+
+.carousel-wrapper .slick-next {
+  right: 20px;
+}
+
+.carousel-wrapper .slick-prev:before,
+.carousel-wrapper .slick-next:before {
+  font-size: 40px;
+  opacity: 0.75;
+}
+
+.carousel-wrapper .slick-prev:hover:before,
+.carousel-wrapper .slick-next:hover:before {
+  opacity: 1;
+}
+
+/* Scrolling Banner */
+.banner-wrapper {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  overflow: hidden;
+  padding: 12px 0;
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+}
+
+.scrolling-banner {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.banner-content {
+  display: flex;
+  gap: 60px;
+  animation: scroll 30s linear infinite;
+  white-space: nowrap;
+}
+
+.banner-content span {
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.banner-content:hover {
+  animation-play-state: paused;
+}
+
+/* 分類選單 */
+.category-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 40px 0;
+  flex-wrap: wrap;
+}
+
+.category-tab {
+  padding: 12px 30px;
+  border: 2px solid #e9ecef;
+  background: white;
+  color: #6c757d;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.category-tab:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: transparent;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.category-tab.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .products-grid {
@@ -263,6 +428,39 @@
 
 /* 響應式設計 */
 @media (max-width: 768px) {
+  .carousel-wrapper .slick-prev,
+  .carousel-wrapper .slick-next {
+    width: 40px;
+    height: 40px;
+  }
+
+  .carousel-wrapper .slick-prev {
+    left: 10px;
+  }
+
+  .carousel-wrapper .slick-next {
+    right: 10px;
+  }
+
+  .carousel-wrapper .slick-prev:before,
+  .carousel-wrapper .slick-next:before {
+    font-size: 30px;
+  }
+
+  .carousel-wrapper .slick-dots {
+    bottom: 15px;
+  }
+
+  .category-tabs {
+    gap: 10px;
+    margin: 30px 0;
+  }
+
+  .category-tab {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
@@ -289,6 +487,39 @@
 }
 
 @media (max-width: 480px) {
+  .carousel-wrapper .slick-prev,
+  .carousel-wrapper .slick-next {
+    width: 30px;
+    height: 30px;
+  }
+
+  .carousel-wrapper .slick-prev:before,
+  .carousel-wrapper .slick-next:before {
+    font-size: 24px;
+  }
+
+  .carousel-wrapper .slick-dots {
+    bottom: 10px;
+  }
+
+  .carousel-wrapper .slick-dots li button:before {
+    font-size: 10px;
+  }
+
+  .carousel-wrapper .slick-dots li.slick-active button:before {
+    font-size: 12px;
+  }
+
+  .category-tabs {
+    gap: 8px;
+    margin: 20px 0;
+  }
+
+  .category-tab {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
   .products-grid {
     grid-template-columns: 1fr;
   }

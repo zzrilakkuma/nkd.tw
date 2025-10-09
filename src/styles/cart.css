@@ -296,27 +296,10 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: block;
   letter-spacing: 0.5px;
-  position: relative;
-  overflow: hidden;
-}
-
-.checkout-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.checkout-btn:hover::before {
-  opacity: 1;
 }
 
 .checkout-btn:hover {
+  background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
   transform: translateY(-3px);
   box-shadow: 0 8px 20px rgba(72, 187, 120, 0.5);
 }
