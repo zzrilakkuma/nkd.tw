@@ -158,22 +158,13 @@ const Payment: React.FC = () => {
 
         <div className="payment-actions">
           <Link to="/products" className="continue-shopping-btn">
-            繼續購物
+            稍後付款
           </Link>
           <button
             onClick={handlePaymentComplete}
             className="complete-btn"
           >
             已完成轉帳
-          </button>
-          <button
-            onClick={() => {
-              alert('感謝您的訂購！請記得完成轉帳付款。');
-              navigate('/');
-            }}
-            className="btn-secondary"
-          >
-            稍後付款
           </button>
         </div>
 

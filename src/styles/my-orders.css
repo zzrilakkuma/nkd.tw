@@ -522,12 +522,39 @@
 }
 
 .btn-secondary {
-  background: #6c757d;
-  color: white;
+  background: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-secondary span,
+.btn-secondary:not(:empty) {
+  position: relative;
+  z-index: 1;
 }
 
 .btn-secondary:hover {
-  background: #5a6268;
+  color: white;
+  border-color: transparent;
+}
+
+.btn-secondary:hover::before {
+  opacity: 1;
 }
 
 .btn-primary {

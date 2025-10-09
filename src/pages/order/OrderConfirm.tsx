@@ -96,18 +96,9 @@ const OrderConfirm: React.FC = () => {
           </div>
 
           <div className="next-steps">
-            <h3>接下來的步驟</h3>
-            <p>請點擊下方按鈕查看付款資訊，完成付款後我們將開始處理您的訂單。</p>
-
             <div className="action-buttons">
               <Link to="/payment" state={{ order }} className="payment-btn">
                 查看付款資訊
-              </Link>
-              <Link to="/my-orders" className="my-orders-btn">
-                查看我的訂單
-              </Link>
-              <Link to="/products" className="continue-shopping-btn">
-                繼續購物
               </Link>
             </div>
           </div>

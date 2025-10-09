@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product } from '../../types';
 import { mockProducts } from '../../services/mockData';
 import { formatPrice } from '../../utils';
@@ -9,12 +9,24 @@ const Products: React.FC = () => {
   const [cart, setCart] = useState<any[]>(() => {
     return JSON.parse(localStorage.getItem('cart') || '[]');
   });
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+
+  useEffect(() => {
+    if (showModal) {
+      const timer = setTimeout(() => {
+        setShowModal(false);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [showModal]);
 
   const addToCart = (product: Product) => {
     const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
 
     if (!currentUser) {
-      alert('請先登入會員');
+      setModalMessage('請先登入會員');
+      setShowModal(true);
       return;
     }
 
@@ -33,7 +45,12 @@ const Products: React.FC = () => {
 
     setCart(newCart);
     localStorage.setItem('cart', JSON.stringify(newCart));
-    alert('商品已加入購物車！');
+
+    // Dispatch custom event to update cart count in header
+    window.dispatchEvent(new Event('cartUpdated'));
+
+    setModalMessage('商品已加入購物車！');
+    setShowModal(true);
   };
 
   return (
@@ -75,6 +92,16 @@ const Products: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="cart-modal-overlay">
+          <div className="cart-modal">
+            <div className="cart-modal-icon">✓</div>
+            <p className="cart-modal-message">{modalMessage}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

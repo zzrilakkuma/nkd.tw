@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import { CheckoutForm, CartItem, OrderStatus } from '../../types';
+import { CartItem, OrderStatus } from '../../types';
 import { formatPrice, calculateCartTotal, generateId } from '../../utils';
 import '../../styles/orders.css';
 
-const schema = yup.object({
-  name: yup.string().required('收件人姓名為必填'),
-  phone: yup.string().required('聯絡電話為必填'),
-  address: yup.string().required('配送地址為必填'),
-  city: yup.string().required('城市為必填'),
-  postalCode: yup.string().required('郵遞區號為必填'),
-  notes: yup.string().optional()
-});
+interface CheckoutData {
+  name: string;
+  phone: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  notes?: string;
+}
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
@@ -24,9 +22,7 @@ const Checkout: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors }
-  } = useForm({
-    resolver: yupResolver(schema)
-  });
+  } = useForm<CheckoutData>();
 
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
@@ -46,7 +42,13 @@ const Checkout: React.FC = () => {
 
   const totalAmount = calculateCartTotal(cartItems);
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: CheckoutData) => {
+    // 簡單驗證
+    if (!data.name || !data.phone || !data.address || !data.city || !data.postalCode) {
+      alert('請填寫所有必填欄位');
+      return;
+    }
+
     const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
 
     const order = {
@@ -94,7 +96,7 @@ const Checkout: React.FC = () => {
                   <input
                     type="text"
                     id="name"
-                    {...register('name')}
+                    {...register('name', { required: '收件人姓名為必填' })}
                     className={errors.name ? 'error' : ''}
                   />
                   {errors.name && <span className="error-message">{errors.name.message}</span>}
@@ -105,7 +107,7 @@ const Checkout: React.FC = () => {
                   <input
                     type="tel"
                     id="phone"
-                    {...register('phone')}
+                    {...register('phone', { required: '聯絡電話為必填' })}
                     className={errors.phone ? 'error' : ''}
                   />
                   {errors.phone && <span className="error-message">{errors.phone.message}</span>}
@@ -117,7 +119,7 @@ const Checkout: React.FC = () => {
                 <input
                   type="text"
                   id="address"
-                  {...register('address')}
+                  {...register('address', { required: '配送地址為必填' })}
                   className={errors.address ? 'error' : ''}
                 />
                 {errors.address && <span className="error-message">{errors.address.message}</span>}
@@ -129,7 +131,7 @@ const Checkout: React.FC = () => {
                   <input
                     type="text"
                     id="city"
-                    {...register('city')}
+                    {...register('city', { required: '城市為必填' })}
                     className={errors.city ? 'error' : ''}
                   />
                   {errors.city && <span className="error-message">{errors.city.message}</span>}
@@ -140,7 +142,7 @@ const Checkout: React.FC = () => {
                   <input
                     type="text"
                     id="postalCode"
-                    {...register('postalCode')}
+                    {...register('postalCode', { required: '郵遞區號為必填' })}
                     className={errors.postalCode ? 'error' : ''}
                   />
                   {errors.postalCode && <span className="error-message">{errors.postalCode.message}</span>}
