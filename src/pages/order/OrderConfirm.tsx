@@ -73,22 +73,22 @@ const OrderConfirm: React.FC = () => {
             </div>
 
             <h3>訂單商品</h3>
-            <div className="order-items">
+            <div className="confirm-order-items">
               {order.items.map(item => (
-                <div key={item.product.id} className="order-item">
-                  <div className="item-info">
-                    <span className="item-name">{item.product.name}</span>
-                    <span className="item-quantity">數量: {item.quantity}</span>
+                <div key={item.product.id} className="confirm-order-item">
+                  <div className="confirm-item-info">
+                    <span className="confirm-item-name">{item.product.name}</span>
+                    <span className="confirm-item-quantity">數量: {item.quantity}</span>
                   </div>
-                  <span className="item-price">
+                  <span className="confirm-item-price">
                     {formatPrice(item.product.price * item.quantity)}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="order-total">
-              <div className="total-row">
+            <div className="confirm-order-total">
+              <div className="confirm-total-row">
                 <span className="label">總計:</span>
                 <span className="amount">{formatPrice(order.totalAmount)}</span>
               </div>

@@ -1,7 +1,7 @@
 /* 商品頁面樣式 */
 .products-page {
   padding: 0 0 40px 0;
-  background: #ffffff;
+  background: #1a1a2e;
   min-height: calc(100vh - 80px);
 }
 
@@ -186,12 +186,12 @@
 }
 
 .product-card {
-  background: white;
+  background: #0d0f17;
   border-radius: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.2);
   position: relative;
 }
 
@@ -244,7 +244,7 @@
 
 .product-info h3 {
   margin: 0 0 10px 0;
-  color: #1a202c;
+  color: #ffffff;
   font-size: 20px;
   font-weight: 700;
   line-height: 1.3;

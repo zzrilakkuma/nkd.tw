@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Order, OrderStatus } from '../../types';
 import { formatPrice, formatDate } from '../../utils';
+import { ordersAPI } from '../../services/api';
 import '../../styles/orders.css';
 import '../../styles/my-orders.css';
 
@@ -15,24 +16,80 @@ const MyOrders: React.FC = () => {
   const [inputError, setInputError] = useState('');
 
   useEffect(() => {
-    const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+    const fetchOrders = async () => {
+      const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
 
-    if (!currentUser) {
-      navigate('/login');
-      return;
-    }
+      if (!currentUser) {
+        navigate('/login');
+        return;
+      }
 
-    // 獲取當前用戶的訂單
-    const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const userOrders = allOrders.filter((order: Order) => order.userId === currentUser.id);
+      try {
+        // 檢查是否有 token
+        if (currentUser && currentUser.token) {
+          // 有 token，從 API 獲取訂單
+          try {
+            const apiOrders = await ordersAPI.getUserOrders();
 
-    // 按日期排序，最新的在前面
-    const sortedOrders = userOrders.sort((a: Order, b: Order) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+            // 轉換 API 回應為前端格式
+            const formattedOrders = apiOrders.map((apiOrder: any) => ({
+              id: apiOrder.id,
+              userId: apiOrder.user_id,
+              items: apiOrder.items.map((item: any) => ({
+                product: {
+                  id: item.product_id,
+                  name: item.product?.name || '商品',
+                  price: item.price,
+                  image: item.product?.image || '/images/placeholder.svg',
+                  description: item.product?.description || '',
+                  stock: item.product?.stock || 0,
+                  category: item.product?.category || ''
+                },
+                quantity: item.quantity
+              })),
+              totalAmount: apiOrder.total_amount,
+              status: apiOrder.status,
+              createdAt: apiOrder.created_at,
+              shippingInfo: apiOrder.shipping_info,
+              paymentInfo: apiOrder.payment_info
+            }));
 
-    setOrders(sortedOrders);
-    setLoading(false);
+            // 按日期排序，最新的在前面
+            const sortedOrders = formattedOrders.sort((a: Order, b: Order) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+
+            setOrders(sortedOrders);
+
+            // 同步更新 localStorage
+            localStorage.setItem('orders', JSON.stringify(sortedOrders));
+          } catch (apiError) {
+            console.warn('API 獲取訂單失敗，使用 localStorage 備援:', apiError);
+            // API 失敗時使用 localStorage
+            const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const userOrders = allOrders.filter((order: Order) => order.userId === currentUser.id);
+            const sortedOrders = userOrders.sort((a: Order, b: Order) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+            setOrders(sortedOrders);
+          }
+        } else {
+          // 沒有 token，使用 localStorage
+          const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+          const userOrders = allOrders.filter((order: Order) => order.userId === currentUser.id);
+          const sortedOrders = userOrders.sort((a: Order, b: Order) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          setOrders(sortedOrders);
+        }
+      } catch (error) {
+        console.error('獲取訂單失敗:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
   }, [navigate]);
 
   const getStatusText = (status: string) => {
@@ -143,6 +200,33 @@ const MyOrders: React.FC = () => {
                         {getStatusText(order.status)}
                       </span>
                     </div>
+                    <div className="order-status-notices">
+                      {order.status === 'pending' && (
+                        <span className="payment-notice">
+                          💳 請記得完成轉帳付款
+                        </span>
+                      )}
+                      {order.status === 'payment_submitted' && (
+                        <span className="payment-submitted-notice">
+                          ⏳ 付款資訊已提交，等待店家確認
+                        </span>
+                      )}
+                      {order.status === 'confirmed' && (
+                        <span className="processing-notice">
+                          📦 您的訂單正在處理中
+                        </span>
+                      )}
+                      {order.status === 'shipped' && (
+                        <span className="shipped-notice">
+                          🚚 商品已出貨，請注意查收
+                        </span>
+                      )}
+                      {order.status === 'delivered' && (
+                        <span className="delivered-notice">
+                          ✅ 訂單已完成
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="order-amount">
                     {formatPrice(order.totalAmount)}
@@ -188,9 +272,6 @@ const MyOrders: React.FC = () => {
                 <div className="order-actions">
                   {order.status === 'pending' && (
                     <div className="payment-section">
-                      <span className="payment-notice">
-                        💳 請記得完成轉帳付款
-                      </span>
                       <div className="bank-transfer-info">
                         <h4>轉帳資訊</h4>
                         <div className="bank-details-compact">
@@ -224,26 +305,6 @@ const MyOrders: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                  )}
-                  {order.status === 'payment_submitted' && (
-                    <span className="payment-submitted-notice">
-                      ⏳ 付款資訊已提交，等待店家確認
-                    </span>
-                  )}
-                  {order.status === 'confirmed' && (
-                    <span className="processing-notice">
-                      📦 您的訂單正在處理中
-                    </span>
-                  )}
-                  {order.status === 'shipped' && (
-                    <span className="shipped-notice">
-                      🚚 商品已出貨，請注意查收
-                    </span>
-                  )}
-                  {order.status === 'delivered' && (
-                    <span className="delivered-notice">
-                      ✅ 訂單已完成
-                    </span>
                   )}
                 </div>
               </div>

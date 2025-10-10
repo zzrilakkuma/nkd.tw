@@ -621,21 +621,30 @@
   align-items: center;
   min-height: 60vh;
   padding: 40px 0;
+  background: #1a1a2e;
 }
 
 .auth-form {
-  background: white;
+  background: #0d0f17;
   padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(102, 126, 234, 0.3);
   width: 100%;
   max-width: 400px;
+  backdrop-filter: blur(10px);
 }
 
 .auth-form h2 {
   text-align: center;
   margin-bottom: 30px;
-  color: #2c3e50;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 28px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .form-row {
@@ -646,20 +655,29 @@
 
 .submit-btn {
   width: 100%;
-  background-color: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   margin-top: 10px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .submit-btn:hover {
-  background-color: #5a6fd8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .auth-links {
@@ -667,14 +685,21 @@
   margin-top: 20px;
 }
 
+.auth-links p {
+  color: #a0a0a0;
+  margin-bottom: 8px;
+}
+
 .auth-links a {
   color: #667eea;
   text-decoration: none;
   font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .auth-links a:hover {
-  color: #5a6fd8;
+  color: #764ba2;
+  text-shadow: 0 0 8px rgba(102, 126, 234, 0.5);
 }
 
 /* Mobile Navigation */

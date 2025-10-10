@@ -190,7 +190,7 @@ tbody tr:hover {
 }
 
 /* 付款資訊樣式 */
-.payment-info {
+.admin-payment-info {
   margin-top: 8px;
   padding: 8px;
   background: #f8f9fa;
@@ -198,18 +198,18 @@ tbody tr:hover {
   border-left: 3px solid #17a2b8;
 }
 
-.payment-info small {
+.admin-payment-info small {
   display: block;
   margin-bottom: 2px;
   color: #495057;
   font-size: 11px;
 }
 
-.payment-info small:last-child {
+.admin-payment-info small:last-child {
   margin-bottom: 0;
 }
 
-.payment-info strong {
+.admin-payment-info strong {
   font-family: monospace;
   color: #2c3e50;
   background: #fff;

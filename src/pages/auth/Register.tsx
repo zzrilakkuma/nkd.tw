@@ -36,9 +36,12 @@ const Register: React.FC = () => {
         password: data.password
       });
 
-      // 儲存使用者資訊和 token
+      // 儲存使用者資訊和 token（轉換命名格式）
       const userData = {
-        ...response.user,
+        id: response.user.id,
+        email: response.user.email,
+        username: response.user.username,
+        isAdmin: response.user.is_admin,  // 轉換為駝峰命名
         token: response.access_token
       };
       localStorage.setItem('user', JSON.stringify(userData));

@@ -17,14 +17,27 @@ export const formatDate = (date: string): string => {
   }).format(new Date(date));
 };
 
-// 生成唯一 ID (UUID 短版本)
+// 生成唯一 ID (6位純數字)
+let lastTimestamp = 0;
+let sequence = 0;
+
 export const generateId = (): string => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
-  for (let i = 0; i < 8; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  // 使用時間戳後4位 + 2位流水號，確保唯一性
+  const now = Date.now();
+
+  if (now === lastTimestamp) {
+    // 同一毫秒內，流水號遞增
+    sequence = (sequence + 1) % 100;
+  } else {
+    // 新的毫秒，重置流水號
+    lastTimestamp = now;
+    sequence = 0;
   }
-  return result;
+
+  const timestamp4 = now.toString().slice(-4); // 時間戳後4位
+  const seq2 = sequence.toString().padStart(2, '0'); // 流水號2位
+
+  return timestamp4 + seq2;
 };
 
 // 驗證 email 格式

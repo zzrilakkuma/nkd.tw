@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { CartItem, OrderStatus } from '../../types';
 import { formatPrice, calculateCartTotal, generateId } from '../../utils';
+import { ordersAPI } from '../../services/api';
 import '../../styles/orders.css';
 
 interface CheckoutData {
@@ -42,7 +43,7 @@ const Checkout: React.FC = () => {
 
   const totalAmount = calculateCartTotal(cartItems);
 
-  const onSubmit = (data: CheckoutData) => {
+  const onSubmit = async (data: CheckoutData) => {
     // 簡單驗證
     if (!data.name || !data.phone || !data.address || !data.city || !data.postalCode) {
       alert('請填寫所有必填欄位');
@@ -51,33 +52,109 @@ const Checkout: React.FC = () => {
 
     const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
 
-    const order = {
-      id: generateId(),
-      userId: currentUser.id,
-      items: cartItems,
-      totalAmount,
-      status: OrderStatus.PENDING,
-      createdAt: new Date().toISOString(),
-      shippingInfo: {
-        name: data.name,
-        phone: data.phone,
-        address: data.address,
-        city: data.city,
-        postalCode: data.postalCode
-      },
-      notes: data.notes
-    };
+    try {
+      let order;
 
-    // 儲存訂單
-    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-    orders.push(order);
-    localStorage.setItem('orders', JSON.stringify(orders));
+      // 檢查是否有登入 token
+      if (currentUser && currentUser.token) {
+        // 有 token，透過 API 建立訂單
+        try {
+          const orderData = {
+            items: cartItems.map(item => ({
+              product_id: item.product.id,
+              quantity: item.quantity
+            })),
+            shipping_info: {
+              name: data.name,
+              phone: data.phone,
+              city: data.city,
+              postalCode: data.postalCode,
+              address: data.address
+            },
+            total_amount: totalAmount
+          };
 
-    // 清空購物車
-    localStorage.removeItem('cart');
+          const apiResponse = await ordersAPI.create(orderData);
 
-    // 跳轉到確認頁面
-    navigate('/order-confirm', { state: { order } });
+          // 轉換 API 回應為前端格式
+          order = {
+            id: apiResponse.id,
+            userId: apiResponse.user_id,
+            items: cartItems,
+            totalAmount: apiResponse.total_amount,
+            status: apiResponse.status,
+            createdAt: apiResponse.created_at,
+            shippingInfo: {
+              name: data.name,
+              phone: data.phone,
+              address: data.address,
+              city: data.city,
+              postalCode: data.postalCode
+            },
+            notes: data.notes
+          };
+
+          // 同步儲存到 localStorage
+          const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+          orders.push(order);
+          localStorage.setItem('orders', JSON.stringify(orders));
+        } catch (apiError: any) {
+          console.warn('API 建立訂單失敗，使用 localStorage 備援:', apiError);
+          // API 失敗時使用 localStorage
+          order = {
+            id: generateId(),
+            userId: currentUser.id,
+            items: cartItems,
+            totalAmount,
+            status: OrderStatus.PENDING,
+            createdAt: new Date().toISOString(),
+            shippingInfo: {
+              name: data.name,
+              phone: data.phone,
+              address: data.address,
+              city: data.city,
+              postalCode: data.postalCode
+            },
+            notes: data.notes
+          };
+
+          const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+          orders.push(order);
+          localStorage.setItem('orders', JSON.stringify(orders));
+        }
+      } else {
+        // 沒有 token，直接使用 localStorage
+        order = {
+          id: generateId(),
+          userId: currentUser?.id || 'guest',
+          items: cartItems,
+          totalAmount,
+          status: OrderStatus.PENDING,
+          createdAt: new Date().toISOString(),
+          shippingInfo: {
+            name: data.name,
+            phone: data.phone,
+            address: data.address,
+            city: data.city,
+            postalCode: data.postalCode
+          },
+          notes: data.notes
+        };
+
+        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+        orders.push(order);
+        localStorage.setItem('orders', JSON.stringify(orders));
+      }
+
+      // 清空購物車
+      localStorage.removeItem('cart');
+
+      // 跳轉到確認頁面
+      navigate('/order-confirm', { state: { order } });
+    } catch (error: any) {
+      console.error('建立訂單失敗:', error);
+      alert('建立訂單失敗，請稍後再試');
+    }
   };
 
   return (
@@ -164,23 +241,24 @@ const Checkout: React.FC = () => {
             </form>
           </div>
 
-          <div className="order-summary">
+          <div className="checkout-order-summary">
             <h2>訂單摘要</h2>
 
-            <div className="order-items">
+            <div className="checkout-order-items">
               {cartItems.map(item => (
-                <div key={item.product.id} className="order-item">
-                  <span className="item-name">
-                    {item.product.name} x {item.quantity}
-                  </span>
-                  <span className="item-price">
+                <div key={item.product.id} className="checkout-order-item">
+                  <div className="checkout-item-info">
+                    <span className="checkout-item-name">{item.product.name}</span>
+                    <span className="checkout-item-quantity">x {item.quantity}</span>
+                  </div>
+                  <span className="checkout-item-price">
                     {formatPrice(item.product.price * item.quantity)}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="order-total">
+            <div className="checkout-order-total">
               <div className="total-row">
                 <span>商品總計:</span>
                 <span>{formatPrice(totalAmount)}</span>

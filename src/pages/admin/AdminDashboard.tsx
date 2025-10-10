@@ -138,7 +138,7 @@ const AdminDashboard: React.FC = () => {
                           {getStatusText(order.status)}
                         </span>
                         {order.paymentInfo && (
-                          <div className="payment-info">
+                          <div className="admin-payment-info">
                             <small>
                               轉帳末五碼: <strong>{order.paymentInfo.last5Digits}</strong>
                             </small>

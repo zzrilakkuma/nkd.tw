@@ -12,7 +12,7 @@ from app.api.dependencies import get_current_admin_user
 router = APIRouter()
 
 
-@router.get("/", response_model=List[ProductResponse])
+@router.get("", response_model=List[ProductResponse])
 def get_products(
     category: str = None,
     db: Session = Depends(get_db)

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 from datetime import datetime
 from app.models.order import OrderStatus
 
@@ -9,11 +9,24 @@ class OrderItemCreate(BaseModel):
     quantity: int
 
 
+class ProductInOrder(BaseModel):
+    id: str
+    name: str
+    image: str
+    description: str
+    stock: int
+    category: str
+
+    class Config:
+        from_attributes = True
+
+
 class OrderItemResponse(BaseModel):
     id: int
     product_id: str
     quantity: int
     price: float
+    product: Optional[ProductInOrder] = None
 
     class Config:
         from_attributes = True

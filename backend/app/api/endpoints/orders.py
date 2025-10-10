@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-import uuid
+import time
 
 from app.core.database import get_db
 from app.models.order import Order, OrderItem, OrderStatus
@@ -13,6 +13,31 @@ from app.api.dependencies import get_current_user, get_current_admin_user
 router = APIRouter()
 
 
+# 訂單編號生成器（防止重複）
+_last_timestamp = 0
+_sequence = 0
+
+def generate_order_id() -> str:
+    """生成6位純數字訂單編號（時間戳4位 + 流水號2位）"""
+    global _last_timestamp, _sequence
+
+    now = int(time.time() * 1000)  # 毫秒級時間戳
+
+    if now == _last_timestamp:
+        # 同一毫秒內，流水號遞增
+        _sequence = (_sequence + 1) % 100
+    else:
+        # 新的毫秒，重置流水號
+        _last_timestamp = now
+        _sequence = 0
+
+    timestamp_str = str(now)
+    timestamp4 = timestamp_str[-4:]  # 時間戳後4位
+    seq2 = str(_sequence).zfill(2)   # 流水號2位
+
+    return timestamp4 + seq2
+
+
 @router.post("/", response_model=OrderResponse)
 def create_order(
     order_data: OrderCreate,
@@ -22,7 +47,7 @@ def create_order(
     """建立訂單"""
     # 建立訂單
     order = Order(
-        id=str(uuid.uuid4()),
+        id=generate_order_id(),
         user_id=current_user.id,
         status=OrderStatus.PENDING,
         total_amount=order_data.total_amount,

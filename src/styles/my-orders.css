@@ -22,9 +22,10 @@
 .empty-orders {
   text-align: center;
   padding: 80px 20px;
-  background: white;
+  background: #0d0f17;
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 .empty-icon {
@@ -34,13 +35,13 @@
 }
 
 .empty-orders h3 {
-  color: #2c3e50;
+  color: #ffffff;
   margin-bottom: 10px;
   font-size: 24px;
 }
 
 .empty-orders p {
-  color: #666;
+  color: #a0a0a0;
   margin-bottom: 30px;
   font-size: 16px;
 }
@@ -49,35 +50,59 @@
 .orders-list {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 40px;
 }
 
 .order-card {
-  background: white;
+  background: #0d0f17;
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  position: relative;
+}
+
+.order-card::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
+}
+
+.order-card:last-child::after {
+  display: none;
 }
 
 .order-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+  border-color: rgba(102, 126, 234, 0.6);
 }
 
 /* 訂單標題區域 */
 .order-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  padding: 24px 30px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.order-info {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 30px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-bottom: 1px solid #dee2e6;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .order-info h3 {
-  margin: 0 0 10px 0;
-  color: #2c3e50;
+  margin: 0;
+  color: #ffffff;
   font-size: 18px;
   font-weight: 600;
   font-family: monospace;
@@ -85,39 +110,49 @@
 
 .order-meta {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .order-date {
-  color: #666;
+  color: #a0a0a0;
   font-size: 14px;
 }
 
 .order-status {
-  padding: 4px 12px;
-  border-radius: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  width: fit-content;
+  white-space: nowrap;
+}
+
+.order-status-notices {
+  display: flex;
+  align-items: center;
 }
 
 .order-amount {
-  font-size: 24px;
+  display: flex;
+  align-items: center;
+  font-size: 28px;
   font-weight: 700;
   color: #667eea;
+  white-space: nowrap;
 }
 
 /* 商品明細區域 */
 .order-items {
   padding: 30px;
-  border-bottom: 1px solid #f8f9fa;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 .order-items h4 {
   margin: 0 0 20px 0;
-  color: #2c3e50;
+  color: #ffffff;
   font-size: 16px;
   font-weight: 600;
 }
@@ -128,7 +163,7 @@
   gap: 15px;
   align-items: center;
   padding: 15px 0;
-  border-bottom: 1px solid #f8f9fa;
+  border-bottom: 1px solid rgba(102, 126, 234, 0.1);
 }
 
 .order-item:last-child {
@@ -140,10 +175,11 @@
   height: 60px;
   border-radius: 6px;
   overflow: hidden;
-  background: #f8f9fa;
+  background: #0d0f17;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 .order-item .item-image img {
@@ -160,7 +196,7 @@
 
 .order-item .item-name {
   font-weight: 600;
-  color: #2c3e50;
+  color: #ffffff;
   font-size: 14px;
 }
 
@@ -168,31 +204,31 @@
   display: flex;
   gap: 15px;
   font-size: 12px;
-  color: #666;
+  color: #a0a0a0;
 }
 
 .order-item .item-total {
   font-weight: 600;
-  color: #2c3e50;
+  color: #ffffff;
   font-size: 14px;
 }
 
 /* 配送資訊區域 */
 .order-shipping {
   padding: 30px;
-  background: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 .order-shipping h4 {
   margin: 0 0 15px 0;
-  color: #2c3e50;
+  color: #ffffff;
   font-size: 16px;
   font-weight: 600;
 }
 
 .shipping-details {
-  background: white;
+  background: #ffffff;
   padding: 20px;
   border-radius: 8px;
   border-left: 4px solid #667eea;
@@ -200,12 +236,16 @@
 
 .shipping-details p {
   margin: 0 0 8px 0;
-  color: #555;
+  color: #2c3e50;
   font-size: 14px;
 }
 
 .shipping-details p:last-child {
   margin-bottom: 0;
+}
+
+.shipping-details p strong {
+  color: #1a202c;
 }
 
 /* 訂單操作區域 */
@@ -215,6 +255,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
 }
 
 .payment-notice,
@@ -392,13 +433,14 @@
 }
 
 .modal-content {
-  background: white;
+  background: #16213e;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+  border: 1px solid rgba(102, 126, 234, 0.3);
 }
 
 .modal-header {
@@ -411,7 +453,7 @@
 
 .modal-header h3 {
   margin: 0;
-  color: #2c3e50;
+  color: #ffffff;
   font-size: 20px;
 }
 
@@ -441,15 +483,20 @@
 }
 
 .order-info-modal {
-  background: #f8f9fa;
+  background: #0d0f17;
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 20px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 .order-info-modal p {
   margin: 8px 0;
-  color: #495057;
+  color: #c0c0c0;
+}
+
+.order-info-modal p strong {
+  color: #ffffff;
 }
 
 .form-group {
@@ -460,21 +507,21 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #495057;
+  color: #ffffff;
 }
 
 .last5digits-input {
   width: 100%;
   padding: 12px 15px;
-  border: 2px solid #e9ecef;
+  border: 2px solid rgba(102, 126, 234, 0.3);
   border-radius: 6px;
   font-size: 16px;
   font-family: monospace;
   letter-spacing: 2px;
   text-align: center;
   transition: border-color 0.3s ease;
-  background: white;
-  color: #495057;
+  background: #0d0f17;
+  color: #ffffff;
   box-sizing: border-box;
 }
 
@@ -499,7 +546,7 @@
 .input-help {
   display: block;
   margin-top: 5px;
-  color: #6c757d;
+  color: #a0a0a0;
   font-size: 12px;
 }
 
@@ -576,20 +623,27 @@
 /* 響應式設計 */
 @media (max-width: 768px) {
   .order-header {
-    flex-direction: column;
-    gap: 15px;
-    align-items: stretch;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .order-info {
+    gap: 10px;
   }
 
   .order-meta {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+    gap: 12px;
+  }
+
+  .order-status-notices {
+    order: 3;
+    width: 100%;
   }
 
   .order-amount {
-    text-align: center;
-    font-size: 20px;
+    justify-content: flex-start;
+    font-size: 24px;
   }
 
   .order-item {
@@ -635,14 +689,29 @@
   }
 
   .order-header {
-    padding: 20px;
+    padding: 16px;
   }
 
   .order-info h3 {
     font-size: 16px;
   }
 
+  .order-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
   .order-amount {
-    font-size: 18px;
+    font-size: 22px;
+  }
+
+  .payment-notice,
+  .payment-submitted-notice,
+  .processing-notice,
+  .shipped-notice,
+  .delivered-notice {
+    font-size: 13px;
+    padding: 8px 16px;
   }
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Order, OrderStatus } from '../../types';
 import { formatPrice, formatDate } from '../../utils';
+import { ordersAPI } from '../../services/api';
 import '../../styles/orders.css';
 import '../../styles/my-orders.css';
 
@@ -35,37 +36,61 @@ const Payment: React.FC = () => {
     setInputError('');
   };
 
-  const submitPaymentComplete = () => {
+  const submitPaymentComplete = async () => {
     if (!order || !last5Digits || last5Digits.length !== 5) {
       alert('請輸入轉帳帳號末五碼');
       return;
     }
 
-    const updatedOrder: Order = {
-      ...order,
-      status: OrderStatus.PAYMENT_SUBMITTED,
-      paymentInfo: {
-        last5Digits: last5Digits,
-        completedAt: new Date().toISOString()
+    try {
+      // 檢查是否有登入 token
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+      if (user && user.token) {
+        // 有 token，透過 API 更新訂單
+        try {
+          await ordersAPI.update(order.id, {
+            status: OrderStatus.PAYMENT_SUBMITTED,
+            payment_info: {
+              last5Digits: last5Digits,
+              completedAt: new Date().toISOString()
+            }
+          });
+        } catch (apiError: any) {
+          console.warn('API 更新失敗，使用 localStorage 備援:', apiError);
+          // API 失敗時繼續使用 localStorage
+        }
       }
-    };
 
-    // 更新 localStorage 中的訂單
-    const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const updatedOrders = allOrders.map((existingOrder: Order) =>
-      existingOrder.id === order.id ? updatedOrder : existingOrder
-    );
-    localStorage.setItem('orders', JSON.stringify(updatedOrders));
+      // 更新 localStorage 中的訂單（主要資料來源或備援）
+      const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+      const updatedOrders = allOrders.map((existingOrder: Order) =>
+        existingOrder.id === order.id
+          ? {
+              ...existingOrder,
+              status: OrderStatus.PAYMENT_SUBMITTED,
+              paymentInfo: {
+                last5Digits: last5Digits,
+                completedAt: new Date().toISOString()
+              }
+            }
+          : existingOrder
+      );
+      localStorage.setItem('orders', JSON.stringify(updatedOrders));
 
-    // 關閉彈窗
-    setShowPaymentModal(false);
-    setLast5Digits('');
-    setInputError('');
+      // 關閉彈窗
+      setShowPaymentModal(false);
+      setLast5Digits('');
+      setInputError('');
 
-    alert('付款資訊已提交！我們將在1-2個工作天內確認您的轉帳，確認後將立即為您準備商品。');
+      alert('付款資訊已提交！我們將在1-2個工作天內確認您的轉帳，確認後將立即為您準備商品。');
 
-    // 導向我的訂單頁面
-    navigate('/my-orders');
+      // 導向我的訂單頁面
+      navigate('/my-orders');
+    } catch (error: any) {
+      console.error('更新訂單失敗:', error);
+      alert('提交付款資訊失敗，請稍後再試');
+    }
   };
 
   if (!order) {

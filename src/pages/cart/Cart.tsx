@@ -112,10 +112,14 @@ const Cart: React.FC = () => {
 
           <div className="cart-summary">
             <h3>訂單摘要</h3>
-            <div className="summary-row">
-              <span>商品總計:</span>
-              <span>{formatPrice(totalAmount)}</span>
-            </div>
+
+            {cartItems.map(item => (
+              <div key={item.product.id} className="summary-row">
+                <span>{item.product.name} x {item.quantity}</span>
+                <span>{formatPrice(item.product.price * item.quantity)}</span>
+              </div>
+            ))}
+
             <div className="summary-row total">
               <span>總計:</span>
               <span>{formatPrice(totalAmount)}</span>
