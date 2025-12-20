@@ -1,0 +1,42 @@
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# 虛擬環境
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 測試
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 資料庫
+*.db
+*.sqlite3
+
+# 環境變數（不應該包含在鏡像中）
+.env
+
+# 其他
+.DS_Store
+.git
+.gitignore
+README.md
+docker-compose.yml
+Dockerfile
