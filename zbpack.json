@@ -1,6 +1,4 @@
 {
-  "build_command": "npm run build",
-  "install_command": "npm ci",
-  "output_dir": "build",
-  "framework": "react"
+  "dockerfile": "Dockerfile",
+  "containerize": true
 }

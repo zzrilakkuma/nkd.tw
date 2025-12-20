@@ -6,8 +6,8 @@ WORKDIR /app
 # 複製 package 文件
 COPY package*.json ./
 
-# 安裝依賴
-RUN npm ci --only=production
+# 安裝所有依賴（包括 devDependencies，構建時需要）
+RUN npm ci
 
 # 複製源代碼
 COPY . .
@@ -20,14 +20,15 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# 安裝 serve 來提供靜態文件
-RUN npm install -g serve
+# 安裝 wget（用於健康檢查）和 serve
+RUN apk add --no-cache wget && \
+    npm install -g serve
 
 # 從 builder 階段複製構建結果
 COPY --from=builder /app/build ./build
 
-# 暴露端口
+# 暴露端口（Zeabur 會動態分配）
 EXPOSE 3000
 
-# 啟動應用
-CMD ["serve", "-s", "build", "-l", "3000"]
+# 啟動應用（使用環境變數 PORT，默認 3000）
+CMD serve -s build -l ${PORT:-3000}
