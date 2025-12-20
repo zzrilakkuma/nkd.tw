@@ -1,0 +1,81 @@
+# 合併部署方案 Dockerfile（不推薦，僅供參考）
+#
+# 警告：這個方案會增加複雜度，不建議用於生產環境
+#
+# 使用方法：
+# docker build -f Dockerfile.combined -t hookah-combined .
+
+# 第一階段：構建前端
+FROM node:18-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+# 第二階段：準備後端
+FROM python:3.11-slim AS backend-builder
+
+WORKDIR /app/backend
+
+RUN apt-get update && apt-get install -y gcc postgresql-client
+
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 第三階段：合併
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# 安裝 Nginx 和系統依賴
+RUN apt-get update && apt-get install -y \
+    nginx \
+    gcc \
+    postgresql-client \
+    supervisor \
+    && rm -rf /var/lib/apt/lists/*
+
+# 複製前端構建結果
+COPY --from=frontend-builder /app/build /var/www/html
+
+# 複製後端
+COPY --from=backend-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY backend /app/backend
+
+# Nginx 配置
+RUN echo 'server { \
+    listen 8080; \
+    \
+    # 前端 \
+    location / { \
+        root /var/www/html; \
+        try_files $uri /index.html; \
+    } \
+    \
+    # 後端 API \
+    location /api { \
+        proxy_pass http://localhost:8000; \
+        proxy_set_header Host $host; \
+        proxy_set_header X-Real-IP $remote_addr; \
+    } \
+}' > /etc/nginx/sites-available/default
+
+# Supervisor 配置（同時運行 Nginx 和 FastAPI）
+RUN echo '[supervisord] \n\
+nodaemon=true \n\
+\n\
+[program:nginx] \n\
+command=nginx -g "daemon off;" \n\
+\n\
+[program:fastapi] \n\
+command=uvicorn app.main:app --host 0.0.0.0 --port 8000 \n\
+directory=/app/backend \n\
+' > /etc/supervisor/conf.d/supervisord.conf
+
+EXPOSE 8080
+
+CMD ["/usr/bin/supervisord"]

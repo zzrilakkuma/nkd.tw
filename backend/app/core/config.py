@@ -42,13 +42,5 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# 在啟動時驗證配置
-try:
-    settings.validate_required_settings()
-except ValueError as e:
-    print(f"\n❌ Configuration Error:\n{e}\n")
-    print("Please set the required environment variables in Zeabur:")
-    print("  1. DATABASE_URL")
-    print("  2. SECRET_KEY")
-    print("  3. FRONTEND_URL (optional)\n")
-    raise
+# 注意：不在模塊加載時驗證配置，而是在應用啟動時驗證
+# 這樣可以避免在 Docker 構建階段因缺少環境變數而失敗
