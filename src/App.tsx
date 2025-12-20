@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
@@ -15,22 +16,24 @@ import './App.css';
 
 function App() {
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Products />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/order-confirm" element={<OrderConfirm />} />
-          <Route path="/payment" element={<Payment />} />
-          <Route path="/my-orders" element={<MyOrders />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Products />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/order-confirm" element={<OrderConfirm />} />
+            <Route path="/payment" element={<Payment />} />
+            <Route path="/my-orders" element={<MyOrders />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </ErrorBoundary>
   );
 }
 
