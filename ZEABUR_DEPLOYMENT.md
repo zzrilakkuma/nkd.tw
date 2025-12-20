@@ -63,11 +63,17 @@ FRONTEND_URL=https://your-frontend.zeabur.app
    - **Root Directory**: `/` (根目錄)
    - **Service Name**: `hookah-frontend` (或自訂)
 
-4. 配置環境變數（如果需要）：
+4. **⚠️ 必需配置環境變數**（在 Variables 標籤）：
 
 ```env
 REACT_APP_API_URL=https://your-backend.zeabur.app/api/v1
 ```
+
+**重要提醒**：
+- 這個環境變數**必須設置**，否則前端會連接到 localhost
+- 請將 `your-backend.zeabur.app` 替換為你的後端實際域名
+- 路徑必須包含 `/api/v1`
+- 必須使用 `https://` 協議
 
 5. 點擊 **Deploy**
 

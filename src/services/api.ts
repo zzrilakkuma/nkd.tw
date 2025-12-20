@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+// 根據環境自動選擇 API 地址
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -8,6 +9,11 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// 開發環境下顯示當前使用的 API 地址
+if (process.env.NODE_ENV === 'development') {
+  console.log('🌐 API Base URL:', API_BASE_URL);
+}
 
 // 請求攔截器：自動添加 token
 api.interceptors.request.use(
