@@ -17,6 +17,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # 複製應用程式
 COPY . .
 
+# 給啟動腳本執行權限
+RUN chmod +x start.sh
+
 # 創建非 root 用戶
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
@@ -28,5 +31,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
-# 啟動應用（支持動態端口）
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+# 使用啟動腳本（會自動初始化數據庫和種子資料）
+CMD ["./start.sh"]

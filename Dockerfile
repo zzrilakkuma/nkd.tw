@@ -12,7 +12,11 @@ RUN npm ci
 # 複製源代碼
 COPY . .
 
-# 構建應用
+# 接收構建時的環境變數
+ARG REACT_APP_API_URL
+ENV REACT_APP_API_URL=${REACT_APP_API_URL}
+
+# 構建應用（環境變數會被編譯進 JavaScript）
 RUN npm run build
 
 # 生產階段

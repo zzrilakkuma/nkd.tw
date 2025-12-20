@@ -40,17 +40,12 @@ async def startup_event():
         print("  3. FRONTEND_URL (optional)\n")
         raise
 
-    # 建立資料表
+    # 檢查數據庫引擎
     if engine is None:
         print("❌ Database engine not initialized. Please check DATABASE_URL.")
         raise RuntimeError("Database engine not initialized")
 
-    try:
-        Base.metadata.create_all(bind=engine)
-        print("✅ Database tables created successfully")
-    except Exception as e:
-        print(f"❌ Database initialization error: {e}")
-        raise
+    print("✅ Application started successfully")
 
 
 @app.get("/")

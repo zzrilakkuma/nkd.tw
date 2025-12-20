@@ -69,11 +69,20 @@ FRONTEND_URL=https://your-frontend.zeabur.app
 REACT_APP_API_URL=https://your-backend.zeabur.app/api/v1
 ```
 
-**重要提醒**：
-- 這個環境變數**必須設置**，否則前端會連接到 localhost
+**🔴 重要提醒（必讀）**：
+- 這個環境變數**必須在部署前設置**，否則前端會連接到 localhost
+- **環境變數會在構建時編譯進 JavaScript**，修改後需要**重新部署**才會生效
 - 請將 `your-backend.zeabur.app` 替換為你的後端實際域名
 - 路徑必須包含 `/api/v1`
 - 必須使用 `https://` 協議
+
+**設置步驟**：
+1. 先部署後端，取得後端域名（例如：`https://hookah-api-xxx.zeabur.app`）
+2. 在前端服務的 Variables 標籤中設置：
+   ```
+   REACT_APP_API_URL=https://hookah-api-xxx.zeabur.app/api/v1
+   ```
+3. 點擊 **Redeploy** 重新構建前端（環境變數才會生效）
 
 5. 點擊 **Deploy**
 
@@ -153,21 +162,56 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 ## 🔧 常見問題
 
-### 1. CORS 錯誤
-- 確認後端的 `FRONTEND_URL` 環境變數設置正確
-- 確認前端的實際網域與環境變數匹配
+### 1. 前端黑屏或顯示錯誤
+**症狀**：前端部署成功但打開網頁是黑屏或顯示 API 連接錯誤
 
-### 2. 資料庫連接失敗
+**解決方法**：
+1. 確認 `REACT_APP_API_URL` 環境變數已設置
+2. 在 Zeabur 前端服務中點擊 **Redeploy** 重新構建
+3. 打開瀏覽器開發者工具（F12）查看 Console 錯誤信息
+4. 確認後端已成功部署並可訪問
+
+### 2. 前端連接到 localhost
+**症狀**：前端嘗試連接 `http://localhost:8000`
+
+**原因**：環境變數在構建時未注入
+
+**解決方法**：
+1. 確保在 Variables 標籤設置了 `REACT_APP_API_URL`
+2. **重新部署前端**（環境變數修改後必須重新構建）
+3. 檢查構建日誌，確認環境變數已正確傳遞
+
+### 3. CORS 錯誤
+**症狀**：瀏覽器 Console 顯示 CORS policy 錯誤
+
+**解決方法**：
+- 確認後端的 `FRONTEND_URL` 環境變數設置正確
+- 確認前端的實際網域與環境變數匹配（包括 `https://`）
+- 重新部署後端服務
+
+### 4. 資料庫連接失敗
+**症狀**：後端啟動失敗，日誌顯示數據庫連接錯誤
+
+**解決方法**：
 - 檢查 `DATABASE_URL` 格式是否正確
 - 確認使用 Zeabur 內部網路地址（`postgres.zeabur.internal`）
+- 確認 PostgreSQL 服務已成功部署
 
-### 3. 前端無法連接後端
-- 檢查 `REACT_APP_API_URL` 是否正確
-- 確認後端服務已成功部署並可訪問
+### 5. 後端啟動失敗
+**症狀**：後端服務狀態顯示失敗
 
-### 4. 構建失敗
+**解決方法**：
+- 查看服務日誌（Logs 標籤）
+- 確認 `DATABASE_URL` 和 `SECRET_KEY` 已設置
+- 檢查是否有 Python 依賴安裝失敗
+
+### 6. 構建失敗
+**症狀**：Docker 構建過程失敗
+
+**解決方法**：
 - 檢查 Dockerfile 路徑是否正確
 - 查看構建日誌，確認依賴安裝成功
+- 確認 Root Directory 設置正確（前端：`/`，後端：`backend`）
 
 ---
 
