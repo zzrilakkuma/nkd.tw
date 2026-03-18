@@ -107,16 +107,18 @@ const Products: React.FC = () => {
       <div className="banner-wrapper">
         <div className="scrolling-banner">
           <div className="banner-content">
-            <span>🔥 全館商品免運優惠中</span>
-            <span>⭐ 新會員首購再享9折</span>
-            <span>🎁 滿千送百折價券</span>
-            <span>💎 頂級水煙品牌正品保證</span>
-            <span>🚀 24小時快速出貨</span>
-            <span>🔥 全館商品免運優惠中</span>
-            <span>⭐ 新會員首購再享9折</span>
-            <span>🎁 滿千送百折價券</span>
-            <span>💎 頂級水煙品牌正品保證</span>
-            <span>🚀 24小時快速出貨</span>
+            <span>🚀 高效率出貨作業</span>
+            <span>🤝 合作方案彈性規劃</span>
+            <span>🏪 店家合作洽詢中</span>
+            <span>✅ 合法報關・合規經營</span>
+            <span>🏷️ 品牌台灣正式代理</span>
+            <span>🔓 多元合作模式開放</span>
+            <span>🚀 高效率出貨作業</span>
+            <span>🤝 合作方案彈性規劃</span>
+            <span>🏪 店家合作洽詢中</span>
+            <span>✅ 合法報關・合規經營</span>
+            <span>🏷️ 品牌台灣正式代理</span>
+            <span>🔓 多元合作模式開放</span>
           </div>
         </div>
       </div>

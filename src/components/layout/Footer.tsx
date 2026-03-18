@@ -6,8 +6,8 @@ const Footer: React.FC = () => {
       <div className="container">
         <div className="footer-content">
           <div className="footer-section">
-            <h3>水煙商城</h3>
-            <p>提供優質水煙產品，讓您享受最佳的水煙體驗</p>
+            <h3>NKD 水煙商城</h3>
+            <p>為合作店家提供穩定供應與完整產品支援之訂貨平台</p>
           </div>
 
           <div className="footer-section">

@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 from app.core.config import settings
 from app.api.router import api_router
 from app.core.database import Base, engine
@@ -44,6 +45,27 @@ async def startup_event():
     if engine is None:
         print("❌ Database engine not initialized. Please check DATABASE_URL.")
         raise RuntimeError("Database engine not initialized")
+
+    # 自動補齊缺少的欄位（安全，可重複執行）
+    try:
+        with engine.connect() as conn:
+            db_url = settings.DATABASE_URL
+            if "postgresql" in db_url:
+                conn.execute(text(
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS saved_address JSON"
+                ))
+            else:
+                # SQLite 不支援 IF NOT EXISTS，先查再加
+                result = conn.execute(text("PRAGMA table_info(users)"))
+                columns = [row[1] for row in result.fetchall()]
+                if "saved_address" not in columns:
+                    conn.execute(text(
+                        "ALTER TABLE users ADD COLUMN saved_address TEXT"
+                    ))
+            conn.commit()
+        print("✅ Database schema migration completed")
+    except Exception as e:
+        print(f"⚠️ Migration warning (may be safe to ignore): {e}")
 
     print("✅ Application started successfully")
 
