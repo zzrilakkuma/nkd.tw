@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { CartItem, OrderStatus } from '../../types';
 import { formatPrice, calculateCartTotal, generateId } from '../../utils';
-import { ordersAPI } from '../../services/api';
+import { ordersAPI, authAPI } from '../../services/api';
 import '../../styles/orders.css';
 
 interface CheckoutData {
@@ -15,13 +15,26 @@ interface CheckoutData {
   notes?: string;
 }
 
+interface SavedAddress {
+  id: string;
+  label?: string;
+  name: string;
+  phone: string;
+  postalCode: string;
+  city: string;
+  address: string;
+}
+
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors }
   } = useForm<CheckoutData>();
 
@@ -39,7 +52,31 @@ const Checkout: React.FC = () => {
     }
 
     setCartItems(savedCart);
+
+    // 從 API 取得常用地址
+    (async () => {
+      try {
+        const user = await authAPI.getMe();
+        if (user.saved_address && Array.isArray(user.saved_address)) {
+          setSavedAddresses(user.saved_address.map((a: any) => ({
+            ...a,
+            id: a.id || Math.random().toString(36).slice(2, 10),
+          })));
+        }
+      } catch {
+        // 無法取得，靜默略過
+      }
+    })();
   }, [navigate]);
+
+  const applyAddress = (addr: SavedAddress) => {
+    setValue('name', addr.name);
+    setValue('phone', addr.phone);
+    setValue('postalCode', addr.postalCode);
+    setValue('city', addr.city);
+    setValue('address', addr.address);
+    setSelectedAddressId(addr.id);
+  };
 
   const totalAmount = calculateCartTotal(cartItems);
 
@@ -165,6 +202,27 @@ const Checkout: React.FC = () => {
         <div className="checkout-content">
           <div className="checkout-form">
             <h2>配送資訊</h2>
+
+            {savedAddresses.length > 0 && (
+              <div className="saved-addresses-section">
+                <p className="saved-addresses-title">常用地址</p>
+                <div className="saved-addresses-list">
+                  {savedAddresses.map(addr => (
+                    <button
+                      key={addr.id}
+                      type="button"
+                      className={`saved-address-card ${selectedAddressId === addr.id ? 'selected' : ''}`}
+                      onClick={() => applyAddress(addr)}
+                    >
+                      {addr.label && <span className="saved-addr-tag">{addr.label}</span>}
+                      <span className="saved-addr-name">{addr.name}</span>
+                      <span className="saved-addr-detail">{addr.postalCode} {addr.city} {addr.address}</span>
+                      {selectedAddressId === addr.id && <span className="saved-addr-check">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="form-row">

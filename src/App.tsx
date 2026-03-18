@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
 import Layout from './components/layout/Layout';
+import AgeVerification from './components/AgeVerification';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -12,11 +13,13 @@ import OrderConfirm from './pages/order/OrderConfirm';
 import Payment from './pages/order/Payment';
 import MyOrders from './pages/order/MyOrders';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import Profile from './pages/profile/Profile';
 import './App.css';
 
 function App() {
   return (
     <ErrorBoundary>
+      <AgeVerification />
       <Router>
         <Layout>
           <Routes>
@@ -30,6 +33,7 @@ function App() {
             <Route path="/payment" element={<Payment />} />
             <Route path="/my-orders" element={<MyOrders />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </Layout>
       </Router>

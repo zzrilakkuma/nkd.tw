@@ -7,7 +7,7 @@ from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash, create_access_token
 from app.core.config import settings
 from app.models.user import User
-from app.schemas.user import UserCreate, UserLogin, Token, UserResponse
+from app.schemas.user import UserCreate, UserLogin, Token, UserResponse, UserProfileUpdate
 from app.api.dependencies import get_current_user
 
 router = APIRouter()
@@ -84,4 +84,18 @@ def login(user_data: UserLogin, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserResponse)
 def get_current_user_info(current_user: User = Depends(get_current_user)):
     """取得當前使用者資訊"""
+    return UserResponse.from_orm(current_user)
+
+
+@router.put("/profile", response_model=UserResponse)
+def update_profile(
+    profile_data: UserProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """更新使用者個人資料（常用地址）"""
+    if profile_data.saved_address is not None:
+        current_user.saved_address = [a.model_dump() for a in profile_data.saved_address]
+    db.commit()
+    db.refresh(current_user)
     return UserResponse.from_orm(current_user)

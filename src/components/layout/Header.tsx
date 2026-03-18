@@ -72,6 +72,9 @@ const Header: React.FC = () => {
                 <Link to="/my-orders" className="dropdown-item">
                   我的訂單
                 </Link>
+                <Link to="/profile" className="dropdown-item">
+                  個人資料設定
+                </Link>
                 {currentUser.isAdmin && (
                   <Link to="/admin" className="dropdown-item">
                     後台管理
@@ -128,6 +131,9 @@ const Header: React.FC = () => {
               <>
                 <Link to="/my-orders" className="mobile-menu-item" onClick={() => setMobileMenuOpen(false)}>
                   我的訂單
+                </Link>
+                <Link to="/profile" className="mobile-menu-item" onClick={() => setMobileMenuOpen(false)}>
+                  個人資料設定
                 </Link>
                 {currentUser.isAdmin && (
                   <Link to="/admin" className="mobile-menu-item" onClick={() => setMobileMenuOpen(false)}>

@@ -58,6 +58,11 @@ export const authAPI = {
     const response = await api.get('/auth/me');
     return response.data;
   },
+
+  updateProfile: async (data: { saved_address: Array<{ id: string; label?: string; name: string; phone: string; postalCode: string; city: string; address: string }> }) => {
+    const response = await api.put('/auth/profile', data);
+    return response.data;
+  },
 };
 
 // 商品 API

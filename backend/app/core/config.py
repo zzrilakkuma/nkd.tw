@@ -17,8 +17,16 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
-    # CORS
+    # CORS - 支援逗號分隔的多個 origin，例如 "https://nkd.tw,https://www.nkd.tw"
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
+    @property
+    def allowed_origins(self) -> list:
+        origins = [o.strip() for o in self.FRONTEND_URL.split(",") if o.strip()]
+        # 開發環境永遠加入 localhost
+        if "http://localhost:3000" not in origins:
+            origins.append("http://localhost:3000")
+        return origins
 
     class Config:
         env_file = ".env"

@@ -1,9 +1,6 @@
 // 格式化價格
 export const formatPrice = (price: number): string => {
-  return new Intl.NumberFormat('zh-TW', {
-    style: 'currency',
-    currency: 'TWD'
-  }).format(price);
+  return `NT$${Math.round(price).toLocaleString('zh-TW')}`;
 };
 
 // 格式化日期

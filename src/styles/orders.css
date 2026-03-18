@@ -1,3 +1,83 @@
+/* 常用地址選擇 */
+.saved-addresses-section {
+  margin-bottom: 24px;
+}
+
+.saved-addresses-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--color-accent-primary);
+  margin: 0 0 10px;
+}
+
+.saved-addresses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.saved-address-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  font-family: inherit;
+}
+
+.saved-address-card:hover {
+  background: rgba(139, 92, 246, 0.08);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.saved-address-card.selected {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: var(--color-accent-primary);
+}
+
+.saved-addr-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-accent-primary);
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 5px;
+  padding: 1px 7px;
+  flex-shrink: 0;
+}
+
+.saved-addr-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  flex-shrink: 0;
+}
+
+.saved-addr-detail {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saved-addr-check {
+  font-size: 13px;
+  color: var(--color-accent-primary);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
 /* 結帳頁面樣式 */
 .checkout-page {
   padding: 40px 0;

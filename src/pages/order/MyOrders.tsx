@@ -179,7 +179,7 @@ const MyOrders: React.FC = () => {
             <h3>您還沒有任何訂單</h3>
             <p>開始購物，創建您的第一個訂單吧！</p>
             <button
-              onClick={() => navigate('/products')}
+              onClick={() => navigate('/')}
               className="btn btn-primary"
             >
               開始購物
