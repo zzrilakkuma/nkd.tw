@@ -10,21 +10,7 @@ const Footer: React.FC = () => {
             <p>為合作店家提供穩定供應與完整產品支援之訂貨平台</p>
           </div>
 
-          <div className="footer-section">
-            <h4>快速連結</h4>
-            <ul>
-              <li><a href="/products">商品目錄</a></li>
-              <li><a href="/about">關於我們</a></li>
-              <li><a href="/contact">聯絡我們</a></li>
-            </ul>
-          </div>
 
-          <div className="footer-section">
-            <h4>客服資訊</h4>
-            <p>電話: 02-1234-5678</p>
-            <p>Email: service@hookah-store.com</p>
-            <p>營業時間: 週一至週日 10:00-22:00</p>
-          </div>
         </div>
 
         <div className="footer-bottom">
