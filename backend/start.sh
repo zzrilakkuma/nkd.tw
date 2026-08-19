@@ -6,9 +6,9 @@ echo "🚀 Starting Hookah Store API..."
 echo "⏳ Waiting for database to be ready..."
 sleep 2
 
-# 運行數據庫初始化（創建表）
-echo "📊 Initializing database tables..."
-python -c "from app.core.database import Base, engine; Base.metadata.create_all(bind=engine); print('✅ Tables created')"
+# 執行資料庫 migration（Alembic；相容既有 create_all 建立的資料庫）
+echo "📊 Running database migrations..."
+python run_migrations.py
 
 # 運行種子資料（如果表是空的）
 echo "🌱 Seeding database..."

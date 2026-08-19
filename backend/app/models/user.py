@@ -13,6 +13,15 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_admin = Column(Boolean, default=False)
     saved_address = Column(JSON, nullable=True)
+
+    # P0 帳號管控
+    must_change_password = Column(Boolean, default=False, nullable=False)  # 首次登入強制改密
+    is_active = Column(Boolean, default=True, nullable=False)              # 停用帳號
+    company_name = Column(String, nullable=True)                          # 公司名稱
+    contact_name = Column(String, nullable=True)                          # 聯絡人
+    contact_phone = Column(String, nullable=True)                         # 聯絡電話
+    tax_id = Column(String, nullable=True)                                # 統一編號
+
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships

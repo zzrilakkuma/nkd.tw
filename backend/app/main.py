@@ -1,9 +1,10 @@
+import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from app.core.config import settings
 from app.api.router import api_router
-from app.core.database import Base, engine
+from app.core.database import Base, engine, SessionLocal
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -66,6 +67,31 @@ async def startup_event():
         print("✅ Database schema migration completed")
     except Exception as e:
         print(f"⚠️ Migration warning (may be safe to ignore): {e}")
+
+    # P5：背景排程 — 定期將逾期未付款訂單標記為已逾期並釋放保留庫存
+    # P6：同時清理超過保留期限（3 個月）的操作紀錄
+    async def expiry_sweeper():
+        from app.services.order_expiry import expire_overdue_orders
+        from app.services.audit import cleanup_old_logs
+        while True:
+            try:
+                if SessionLocal is not None:
+                    db = SessionLocal()
+                    try:
+                        count = expire_overdue_orders(db)
+                        if count:
+                            print(f"⌛ 已將 {count} 筆逾期未付款訂單標記為已逾期並釋放庫存")
+                        removed = cleanup_old_logs(db)
+                        if removed:
+                            print(f"🧹 已清理 {removed} 筆逾 3 個月的操作紀錄")
+                    finally:
+                        db.close()
+            except Exception as e:
+                print(f"⚠️ 逾期掃描失敗（下次再試）: {e}")
+            await asyncio.sleep(settings.EXPIRY_SWEEP_INTERVAL_SECONDS)
+
+    asyncio.create_task(expiry_sweeper())
+    print(f"⏲️  逾期掃描已啟動（每 {settings.EXPIRY_SWEEP_INTERVAL_SECONDS} 秒；付款期限 {settings.PAYMENT_DEADLINE_HOURS} 小時）")
 
     print("✅ Application started successfully")
 

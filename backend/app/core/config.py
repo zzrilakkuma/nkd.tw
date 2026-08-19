@@ -20,6 +20,24 @@ class Settings(BaseSettings):
     # CORS - 支援逗號分隔的多個 origin，例如 "https://nkd.tw,https://www.nkd.tw"
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
+    # 付款期限（小時）：核對完成進入「等待付款」後開始倒數，逾期自動取消
+    PAYMENT_DEADLINE_HOURS: int = int(os.getenv("PAYMENT_DEADLINE_HOURS", "48"))
+    # 逾期掃描間隔（秒）
+    EXPIRY_SWEEP_INTERVAL_SECONDS: int = int(os.getenv("EXPIRY_SWEEP_INTERVAL_SECONDS", "600"))
+
+    # 各配送方式的預設運費（管理員核對時仍可調整）
+    SHIPPING_FEE_HOME_DELIVERY: float = float(os.getenv("SHIPPING_FEE_HOME_DELIVERY", "100"))
+    SHIPPING_FEE_CVS_711: float = float(os.getenv("SHIPPING_FEE_CVS_711", "60"))
+    SHIPPING_FEE_SELF_PICKUP: float = float(os.getenv("SHIPPING_FEE_SELF_PICKUP", "0"))
+
+    @property
+    def default_shipping_fees(self) -> dict:
+        return {
+            "home_delivery": self.SHIPPING_FEE_HOME_DELIVERY,
+            "cvs_711": self.SHIPPING_FEE_CVS_711,
+            "self_pickup": self.SHIPPING_FEE_SELF_PICKUP,
+        }
+
     @property
     def allowed_origins(self) -> list:
         origins = [o.strip() for o in self.FRONTEND_URL.split(",") if o.strip()]

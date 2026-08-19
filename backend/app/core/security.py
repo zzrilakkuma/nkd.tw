@@ -1,3 +1,5 @@
+import secrets
+import string
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
@@ -5,6 +7,12 @@ from passlib.context import CryptContext
 from app.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def generate_temp_password(length: int = 10) -> str:
+    """產生易讀的臨時密碼（去除易混淆字元），供管理員建立/重設帳號使用"""
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"
+    return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
