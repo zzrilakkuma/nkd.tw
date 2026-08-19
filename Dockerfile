@@ -7,7 +7,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # 安裝所有依賴（包括 devDependencies，構建時需要）
-RUN npm ci
+# 加上重試/逾時設定，避免建置環境的暫時性網路錯誤導致失敗；
+# --no-audit --no-fund 減少不必要的 registry 請求
+RUN npm config set fetch-retries 5 \
+    && npm config set fetch-retry-mintimeout 20000 \
+    && npm config set fetch-retry-maxtimeout 120000 \
+    && npm config set fetch-timeout 600000 \
+    && npm ci --no-audit --no-fund
 
 # 複製源代碼
 COPY . .
