@@ -1,42 +1,35 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { OrderStatus } from '../../types';
 import { formatPrice, formatDate } from '../../utils';
+import { statusText as STATUS_TEXT_FN, statusClass as STATUS_CLASS_FN, NEXT_STATUSES } from '../../utils/orderStatus';
+import { deliveryLabel } from '../../utils/delivery';
 import { ApiOrder } from './AdminDashboard';
 
 interface Props {
   order: ApiOrder | null;
   onClose: () => void;
   onStatusChange: (orderId: string, status: OrderStatus) => Promise<void>;
+  onVerify: (orderId: string, shippingFee: number) => Promise<void>;
   updatingId: string | null;
 }
 
-const STATUS_TEXT: Record<string, string> = {
-  pending: '待付款',
-  payment_submitted: '待確認',
-  confirmed: '已確認',
-  shipped: '已出貨',
-  delivered: '已送達',
-  cancelled: '已取消',
-};
-
-const STATUS_CLASS: Record<string, string> = {
-  pending: 'status-pending',
-  payment_submitted: 'status-payment-submitted',
-  confirmed: 'status-confirmed',
-  shipped: 'status-shipped',
-  delivered: 'status-delivered',
-  cancelled: 'status-cancelled',
-};
-
+// 正常流程進度（不含取消/逾期）
 const STATUS_STEPS = [
-  OrderStatus.PENDING,
-  OrderStatus.PAYMENT_SUBMITTED,
-  OrderStatus.CONFIRMED,
-  OrderStatus.SHIPPED,
-  OrderStatus.DELIVERED,
+  OrderStatus.PENDING_REVIEW,
+  OrderStatus.PENDING_PAYMENT,
+  OrderStatus.PENDING_CONFIRM,
+  OrderStatus.PREPARING,
+  OrderStatus.COMPLETED,
 ];
 
-const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, updatingId }) => {
+const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onVerify, updatingId }) => {
+  const [feeInput, setFeeInput] = useState<string>('');
+
+  // 進入不同訂單時，預填目前運費
+  useEffect(() => {
+    if (order) setFeeInput(String(order.shipping_fee ?? 0));
+  }, [order?.id]); // eslint-disable-line
+
   // ESC 關閉
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -54,7 +47,8 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, upd
   if (!order) return null;
 
   const currentStepIndex = STATUS_STEPS.indexOf(order.status as OrderStatus);
-  const isCancelled = order.status === OrderStatus.CANCELLED;
+  const isCancelled = order.status === OrderStatus.CANCELLED || order.status === OrderStatus.EXPIRED;
+  const nextStatuses = NEXT_STATUSES[order.status] || [];
 
   return (
     <>
@@ -69,9 +63,10 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, upd
             <span className="drawer-order-id">
               #{order.id.length > 10 ? `${order.id.slice(0, 8)}…` : order.id}
             </span>
-            <span className={`status ${STATUS_CLASS[order.status]}`}>
-              {STATUS_TEXT[order.status]}
+            <span className={`status ${STATUS_CLASS_FN(order.status)}`}>
+              {STATUS_TEXT_FN(order.status)}
             </span>
+            {order.locked && <span className="status" style={{ marginLeft: 6 }}>🔒 已鎖定</span>}
           </div>
           <button className="drawer-close" onClick={onClose} title="關閉 (ESC)">✕</button>
         </div>
@@ -95,31 +90,61 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, upd
                   >
                     <div className="step-dot" />
                     {i < STATUS_STEPS.length - 1 && <div className="step-line" />}
-                    <span className="step-label">{STATUS_TEXT[step]}</span>
+                    <span className="step-label">{STATUS_TEXT_FN(step)}</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* 收件資訊 */}
+          {/* 配送 / 收件資訊 */}
           <div className="drawer-section">
-            <h4>收件資訊</h4>
+            <h4>配送資訊（{deliveryLabel(order.delivery_method)}）</h4>
             <div className="info-grid">
               <div className="info-row">
-                <span className="info-label">姓名</span>
+                <span className="info-label">{order.delivery_method === 'self_pickup' ? '取件人' : '姓名'}</span>
                 <span className="info-value">{order.shipping_info.name}</span>
               </div>
               <div className="info-row">
                 <span className="info-label">電話</span>
                 <span className="info-value">{order.shipping_info.phone}</span>
               </div>
-              <div className="info-row">
-                <span className="info-label">地址</span>
-                <span className="info-value">
-                  {order.shipping_info.postalCode} {order.shipping_info.city} {order.shipping_info.address}
-                </span>
-              </div>
+              {order.delivery_method === 'cvs_711' ? (
+                <>
+                  <div className="info-row">
+                    <span className="info-label">門市名稱</span>
+                    <span className="info-value">{order.shipping_info.store_name}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">門市店號</span>
+                    <span className="info-value">{order.shipping_info.store_code}</span>
+                  </div>
+                </>
+              ) : order.delivery_method === 'self_pickup' ? (
+                <>
+                  <div className="info-row">
+                    <span className="info-label">自取地點</span>
+                    <span className="info-value">{order.shipping_info.location_name}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">地址</span>
+                    <span className="info-value">{order.shipping_info.address}</span>
+                  </div>
+                </>
+              ) : (
+                <div className="info-row">
+                  <span className="info-label">地址</span>
+                  <span className="info-value">
+                    {order.shipping_info.postalCode} {order.shipping_info.city} {order.shipping_info.address}
+                  </span>
+                </div>
+              )}
+              {order.shipping_info.note && (
+                <div className="info-row">
+                  <span className="info-label">備註</span>
+                  <span className="info-value">{order.shipping_info.note}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -130,13 +155,18 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, upd
               {order.items.map((item) => (
                 <div key={item.id} className="order-item-row">
                   <img
-                    src={item.product?.image || '/images/placeholder.svg'}
+                    src={item.product?.main_image || '/images/placeholder.svg'}
                     alt={item.product?.name}
                     className="item-thumb"
                     onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.svg'; }}
                   />
                   <div className="item-info">
-                    <div className="item-name">{item.product?.name || item.product_id}</div>
+                    <div className="item-name">
+                      {item.product?.name || item.product_id}
+                      {[item.sku?.flavor, item.sku?.spec].filter(Boolean).length > 0 && (
+                        <span className="item-sku"> · {[item.sku?.flavor, item.sku?.spec].filter(Boolean).join(' / ')}</span>
+                      )}
+                    </div>
                     <div className="item-price-row">
                       <span className="item-unit-price">{formatPrice(item.price)} × {item.quantity}</span>
                       <span className="item-subtotal">{formatPrice(item.price * item.quantity)}</span>
@@ -145,8 +175,16 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, upd
                 </div>
               ))}
             </div>
+            <div className="order-total-row" style={{ fontWeight: 400, fontSize: 14 }}>
+              <span>商品小計</span>
+              <span>{formatPrice(order.subtotal)}</span>
+            </div>
+            <div className="order-total-row" style={{ fontWeight: 400, fontSize: 14 }}>
+              <span>運費</span>
+              <span>{formatPrice(order.shipping_fee)}</span>
+            </div>
             <div className="order-total-row">
-              <span>合計</span>
+              <span>最終金額</span>
               <span className="total-amount">{formatPrice(order.total_amount)}</span>
             </div>
           </div>
@@ -168,27 +206,70 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, upd
             </div>
           )}
 
-          {/* 更改狀態 */}
+          {/* 操作（依目前狀態顯示） */}
           <div className="drawer-section">
-            <h4>更改狀態</h4>
-            <div className="drawer-status-action">
-              <select
-                value={order.status}
-                onChange={(e) => onStatusChange(order.id, e.target.value as OrderStatus)}
-                className="status-select drawer-select"
-                disabled={updatingId === order.id}
-              >
-                <option value={OrderStatus.PENDING}>待付款</option>
-                <option value={OrderStatus.PAYMENT_SUBMITTED}>待確認</option>
-                <option value={OrderStatus.CONFIRMED}>已確認</option>
-                <option value={OrderStatus.SHIPPED}>已出貨</option>
-                <option value={OrderStatus.DELIVERED}>已送達</option>
-                <option value={OrderStatus.CANCELLED}>已取消</option>
-              </select>
-              {updatingId === order.id && (
-                <span className="updating-label">更新中...</span>
-              )}
-            </div>
+            <h4>操作</h4>
+
+            {/* 等待核對：輸入運費 → 核對完成 */}
+            {order.status === OrderStatus.PENDING_REVIEW ? (
+              <div>
+                <p className="delivery-note-hint">
+                  請先與客戶確認此商品數量是否適用「{deliveryLabel(order.delivery_method)}」，
+                  並輸入實際運費後點「核對完成」。核對完成後金額鎖定並進入等待付款。
+                </p>
+                <div className="form-group" style={{ maxWidth: 220 }}>
+                  <label>運費（TWD）</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={feeInput}
+                    onChange={e => setFeeInput(e.target.value)}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+                  <button
+                    className="btn-save"
+                    disabled={updatingId === order.id}
+                    onClick={() => {
+                      const fee = parseFloat(feeInput);
+                      if (isNaN(fee) || fee < 0) { alert('請輸入有效運費'); return; }
+                      onVerify(order.id, fee);
+                    }}
+                  >
+                    核對完成（進入待付款）
+                  </button>
+                  <button
+                    className="btn-delete"
+                    disabled={updatingId === order.id}
+                    onClick={() => onStatusChange(order.id, OrderStatus.CANCELLED)}
+                  >
+                    取消訂單
+                  </button>
+                  {updatingId === order.id && <span className="updating-label">更新中...</span>}
+                </div>
+              </div>
+            ) : nextStatuses.length === 0 ? (
+              <p className="updating-label">此訂單已結束，無可用操作。</p>
+            ) : (
+              <div className="drawer-status-action" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {nextStatuses.map(s => (
+                  <button
+                    key={s}
+                    className={s === OrderStatus.CANCELLED || s === OrderStatus.EXPIRED ? 'btn-delete' : 'btn-save'}
+                    disabled={updatingId === order.id}
+                    onClick={() => onStatusChange(order.id, s)}
+                  >
+                    {s === OrderStatus.PENDING_CONFIRM ? '標記已提交付款'
+                      : s === OrderStatus.PREPARING ? '確認入帳（準備出貨）'
+                      : s === OrderStatus.COMPLETED ? '標記已完成'
+                      : s === OrderStatus.CANCELLED ? '取消訂單'
+                      : s === OrderStatus.EXPIRED ? '標記逾期'
+                      : STATUS_TEXT_FN(s)}
+                  </button>
+                ))}
+                {updatingId === order.id && <span className="updating-label">更新中...</span>}
+              </div>
+            )}
           </div>
         </div>
       </div>

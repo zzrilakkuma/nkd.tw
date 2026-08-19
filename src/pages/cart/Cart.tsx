@@ -12,32 +12,34 @@ const Cart: React.FC = () => {
     setCartItems(savedCart);
   }, []);
 
-  const updateQuantity = (productId: string, newQuantity: number) => {
-    if (newQuantity === 0) {
-      removeItem(productId);
-      return;
-    }
-
-    const updatedCart = cartItems.map(item =>
-      item.product.id === productId
-        ? { ...item, quantity: newQuantity }
-        : item
-    );
-
+  const persist = (updatedCart: CartItem[]) => {
     setCartItems(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
-  const removeItem = (productId: string) => {
-    const updatedCart = cartItems.filter(item => item.product.id !== productId);
-    setCartItems(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
+  const updateQuantity = (skuId: string, newQuantity: number) => {
+    if (newQuantity === 0) {
+      removeItem(skuId);
+      return;
+    }
+    persist(cartItems.map(item =>
+      item.sku?.id === skuId ? { ...item, quantity: newQuantity } : item
+    ));
+  };
+
+  const removeItem = (skuId: string) => {
+    persist(cartItems.filter(item => item.sku?.id !== skuId));
   };
 
   const clearCart = () => {
     setCartItems([]);
     localStorage.removeItem('cart');
+    window.dispatchEvent(new Event('cartUpdated'));
   };
+
+  const skuLabel = (item: CartItem) =>
+    [item.sku?.flavor, item.sku?.spec].filter(Boolean).join(' / ');
 
   const totalAmount = calculateCartTotal(cartItems);
 
@@ -65,7 +67,7 @@ const Cart: React.FC = () => {
         <div className="cart-content">
           <div className="cart-items">
             {cartItems.map(item => (
-              <div key={item.product.id} className="cart-item">
+              <div key={item.sku?.id || item.product.id} className="cart-item">
                 <div className="item-image">
                   <img src={item.product.image} alt={item.product.name} onError={(e) => {
                     (e.target as HTMLImageElement).src = '/images/placeholder.svg';
@@ -74,21 +76,21 @@ const Cart: React.FC = () => {
 
                 <div className="item-details">
                   <h3>{item.product.name}</h3>
-                  <p>{item.product.description}</p>
-                  <div className="item-price">{formatPrice(item.product.price)}</div>
+                  {skuLabel(item) && <p className="cart-sku-label">{skuLabel(item)}</p>}
+                  <div className="item-price">{formatPrice(item.sku.price)}</div>
                 </div>
 
                 <div className="item-controls">
                   <div className="quantity-controls">
                     <button
-                      onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                      onClick={() => updateQuantity(item.sku.id, item.quantity - 1)}
                       className="quantity-btn"
                     >
                       -
                     </button>
                     <span className="quantity">{item.quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.sku.id, item.quantity + 1)}
                       className="quantity-btn"
                     >
                       +
@@ -96,11 +98,11 @@ const Cart: React.FC = () => {
                   </div>
 
                   <div className="item-total">
-                    {formatPrice(item.product.price * item.quantity)}
+                    {formatPrice(item.sku.price * item.quantity)}
                   </div>
 
                   <button
-                    onClick={() => removeItem(item.product.id)}
+                    onClick={() => removeItem(item.sku.id)}
                     className="remove-btn"
                   >
                     移除
@@ -114,9 +116,9 @@ const Cart: React.FC = () => {
             <h3>訂單摘要</h3>
 
             {cartItems.map(item => (
-              <div key={item.product.id} className="summary-row">
-                <span>{item.product.name} x {item.quantity}</span>
-                <span>{formatPrice(item.product.price * item.quantity)}</span>
+              <div key={item.sku?.id || item.product.id} className="summary-row">
+                <span>{item.product.name}{skuLabel(item) ? `（${skuLabel(item)}）` : ''} x {item.quantity}</span>
+                <span>{formatPrice(item.sku.price * item.quantity)}</span>
               </div>
             ))}
 

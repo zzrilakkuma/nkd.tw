@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Slider from 'react-slick';
-import { Product } from '../../types';
+import { Product, SKU } from '../../types';
 import { productsAPI } from '../../services/api';
 import { formatPrice } from '../../utils';
 import '../../styles/products.css';
@@ -17,6 +17,8 @@ const Products: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('全部');
+  // 每個商品目前選取的 SKU（僅多 SKU 商品需要）
+  const [selectedSku, setSelectedSku] = useState<Record<string, string>>({});
 
   // 從 API 獲取商品
   useEffect(() => {
@@ -36,13 +38,25 @@ const Products: React.FC = () => {
     fetchProducts();
   }, []);
 
-  // 取得所有分類
-  const categories = ['全部', ...Array.from(new Set(products.map(p => p.category)))];
+  // 取得所有分類（由商品的 category 物件名稱彙整）
+  const categories = ['全部', ...Array.from(
+    new Set(products.map(p => p.category?.name).filter(Boolean) as string[])
+  )];
 
   // 根據分類篩選商品
   const filteredProducts = selectedCategory === '全部'
     ? products
-    : products.filter(p => p.category === selectedCategory);
+    : products.filter(p => p.category?.name === selectedCategory);
+
+  // 取得商品目前選取（或預設第一個 active）的 SKU
+  const getActiveSku = (product: Product): SKU | undefined => {
+    const actives = (product.skus || []).filter(s => s.is_active);
+    const chosenId = selectedSku[product.id];
+    return actives.find(s => s.id === chosenId) || actives[0];
+  };
+
+  const skuLabel = (s: SKU) =>
+    [s.flavor, s.spec].filter(Boolean).join(' / ') || s.unit || '標準';
 
   useEffect(() => {
     if (showModal) {
@@ -62,17 +76,25 @@ const Products: React.FC = () => {
       return;
     }
 
-    const existingItem = cart.find(item => item.product.id === product.id);
+    const sku = getActiveSku(product);
+    if (!sku) {
+      setModalMessage('此商品暫無可購買規格');
+      setShowModal(true);
+      return;
+    }
+
+    // 以 sku.id 作為購物車項目的識別
+    const existingItem = cart.find(item => item.sku?.id === sku.id);
     let newCart;
 
     if (existingItem) {
       newCart = cart.map(item =>
-        item.product.id === product.id
+        item.sku?.id === sku.id
           ? { ...item, quantity: item.quantity + 1 }
           : item
       );
     } else {
-      newCart = [...cart, { product, quantity: 1 }];
+      newCart = [...cart, { product, sku, quantity: 1 }];
     }
 
     setCart(newCart);
@@ -193,7 +215,11 @@ const Products: React.FC = () => {
           </div>
         ) : (
           <div className="products-grid">
-            {filteredProducts.map(product => (
+            {filteredProducts.map(product => {
+              const activeSkus = (product.skus || []).filter(s => s.is_active);
+              const sku = getActiveSku(product);
+              const available = sku ? sku.available : 0;
+              return (
             <div key={product.id} className="product-card">
               <div className="product-image">
                 <img src={product.image} alt={product.name} onError={(e) => {
@@ -205,25 +231,44 @@ const Products: React.FC = () => {
                 <h3>{product.name}</h3>
                 <p className="product-description">{product.description}</p>
                 <div className="product-details">
-                  <span className="product-category">{product.category}</span>
+                  <span className="product-category">{product.category?.name}</span>
                   <span className="product-availability">
-                    {product.stock > 0 ? '現貨供應' : '暫時缺貨'}
+                    {available > 0 ? '現貨供應' : '暫時缺貨'}
                   </span>
                 </div>
+
+                {activeSkus.length > 1 && (
+                  <div className="sku-options">
+                    {activeSkus.map(s => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        className={`sku-chip ${sku?.id === s.id ? 'active' : ''}`}
+                        onClick={() =>
+                          setSelectedSku(prev => ({ ...prev, [product.id]: s.id }))
+                        }
+                      >
+                        {skuLabel(s)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 <div className="product-price">
-                  {formatPrice(product.price)}
+                  {sku ? formatPrice(sku.price) : '—'}
                 </div>
 
                 <button
                   onClick={() => addToCart(product)}
                   className="add-to-cart-btn"
-                  disabled={product.stock === 0}
+                  disabled={available === 0}
                 >
-                  {product.stock === 0 ? '缺貨' : '加入購物車'}
+                  {available === 0 ? '缺貨' : '加入購物車'}
                 </button>
               </div>
             </div>
-          ))}
+              );
+            })}
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { Order, OrderStatus } from '../../types';
+import { Order } from '../../types';
 import { formatPrice, formatDate } from '../../utils';
 import { ordersAPI } from '../../services/api';
 import '../../styles/orders.css';
@@ -43,47 +43,15 @@ const Payment: React.FC = () => {
     }
 
     try {
-      // 檢查是否有登入 token
-      const user = JSON.parse(localStorage.getItem('user') || 'null');
-
-      if (user && user.token) {
-        // 有 token，透過 API 更新訂單
-        try {
-          await ordersAPI.update(order.id, {
-            status: OrderStatus.PAYMENT_SUBMITTED,
-            payment_info: {
-              last5Digits: last5Digits,
-              completedAt: new Date().toISOString()
-            }
-          });
-        } catch (apiError: any) {
-          console.warn('API 更新失敗，使用 localStorage 備援:', apiError);
-          // API 失敗時繼續使用 localStorage
-        }
-      }
-
-      // 更新 localStorage 中的訂單（主要資料來源或備援）
-      const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-      const updatedOrders = allOrders.map((existingOrder: Order) =>
-        existingOrder.id === order.id
-          ? {
-              ...existingOrder,
-              status: OrderStatus.PAYMENT_SUBMITTED,
-              paymentInfo: {
-                last5Digits: last5Digits,
-                completedAt: new Date().toISOString()
-              }
-            }
-          : existingOrder
-      );
-      localStorage.setItem('orders', JSON.stringify(updatedOrders));
+      // 透過 API 提交付款：等待付款 → 等待入帳確認
+      await ordersAPI.pay(order.id, last5Digits);
 
       // 關閉彈窗
       setShowPaymentModal(false);
       setLast5Digits('');
       setInputError('');
 
-      alert('付款資訊已提交！我們將在1-2個工作天內確認您的轉帳，確認後將立即為您準備商品。');
+      alert('付款資訊已提交！我們將確認您的轉帳，確認入帳後即為您準備出貨。');
 
       // 導向我的訂單頁面
       navigate('/my-orders');
@@ -123,12 +91,15 @@ const Payment: React.FC = () => {
 
             <div className="order-items-summary">
               <h3>商品清單</h3>
-              {order.items.map(item => (
-                <div key={item.product.id} className="item-summary">
+              {order.items.map(item => {
+                const price = item.sku?.price ?? item.product.price ?? 0;
+                return (
+                <div key={item.sku?.id || item.product.id} className="item-summary">
                   <span>{item.product.name} x {item.quantity}</span>
-                  <span>{formatPrice(item.product.price * item.quantity)}</span>
+                  <span>{formatPrice(price * item.quantity)}</span>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -165,8 +136,8 @@ const Payment: React.FC = () => {
               <ul>
                 <li>請使用 ATM 或網路銀行轉帳至上述帳戶</li>
                 <li>轉帳時請備註您的訂單編號: <strong>{order.id}</strong></li>
-                <li>轉帳完成後，我們將在 1-2 個工作天內確認您的付款</li>
-                <li>付款確認後，我們將立即開始準備您的商品並安排出貨</li>
+                <li>轉帳完成後，請點「已完成轉帳」並填入帳號末五碼</li>
+                <li>我們確認入帳後，將立即開始準備您的商品並安排出貨</li>
                 <li>如有任何問題，請聯絡客服: 02-1234-5678</li>
               </ul>
             </div>
@@ -174,8 +145,8 @@ const Payment: React.FC = () => {
             <div className="payment-notice">
               <h4>重要提醒</h4>
               <p>
-                請保留轉帳收據作為付款憑證。如於 3 個工作天內未完成付款，
-                訂單將自動取消。完成付款後可在後台查看訂單狀態。
+                請保留轉帳收據作為付款憑證。訂單進入「等待付款」後須於 48 小時內完成付款，
+                逾期系統將自動取消並釋放庫存。完成付款後可於「我的訂單」查看狀態。
               </p>
             </div>
           </div>

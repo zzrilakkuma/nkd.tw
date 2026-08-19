@@ -1,7 +1,7 @@
-import { Product, User, Order } from '../types';
+import { User, Order } from '../types';
 
-// 模擬水煙商品資料
-export const mockProducts: Product[] = [
+// 模擬水煙商品資料（舊結構，僅供 legacy localStorage 初始化；實際商品由 API 提供）
+export const mockProducts: any[] = [
   // DarkSide 系列水煙草 (100g裝，760元)
   {
     id: '1',

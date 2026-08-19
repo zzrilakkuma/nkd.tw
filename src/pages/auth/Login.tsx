@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { LoginForm } from '../../types';
 import { authAPI } from '../../services/api';
 
@@ -34,11 +34,17 @@ const Login: React.FC = () => {
         email: response.user.email,
         username: response.user.username,
         isAdmin: response.user.is_admin,  // 轉換為駝峰命名
+        mustChangePassword: response.user.must_change_password,
         token: response.access_token
       };
       localStorage.setItem('user', JSON.stringify(userData));
 
-      navigate('/');
+      // 首次登入（臨時密碼）強制修改密碼
+      if (response.user.must_change_password) {
+        navigate('/change-password');
+      } else {
+        navigate('/');
+      }
     } catch (error: any) {
       console.error('Login error:', error);
       const errorMessage = error.response?.data?.detail || '登入失敗，請檢查您的電子郵件和密碼';
@@ -84,7 +90,7 @@ const Login: React.FC = () => {
         </form>
 
         <div className="auth-links">
-          <p>還沒有帳號？ <Link to="/register">立即註冊</Link></p>
+          <p className="auth-note">如需帳號，請聯絡管理員開通。</p>
         </div>
       </div>
     </div>

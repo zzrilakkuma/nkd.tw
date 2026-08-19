@@ -43,9 +43,14 @@ export const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
-// 計算購物車總金額
-export const calculateCartTotal = (items: Array<{product: {price: number}, quantity: number}>): number => {
-  return items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+// 計算購物車總金額（以 SKU 單價為準；相容舊資料則退回 product.price）
+export const calculateCartTotal = (
+  items: Array<{ sku?: { price: number }; product?: { price?: number }; quantity: number }>
+): number => {
+  return items.reduce((total, item) => {
+    const price = item.sku?.price ?? item.product?.price ?? 0;
+    return total + price * item.quantity;
+  }, 0);
 };
 
 // 本地儲存工具函數

@@ -5,7 +5,7 @@ import Layout from './components/layout/Layout';
 import AgeVerification from './components/AgeVerification';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
+import ChangePassword from './pages/auth/ChangePassword';
 import Products from './pages/product/Products';
 import Cart from './pages/cart/Cart';
 import Checkout from './pages/order/Checkout';
@@ -26,7 +26,7 @@ function App() {
             <Route path="/" element={<Products />} />
             <Route path="/home" element={<Home />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-confirm" element={<OrderConfirm />} />

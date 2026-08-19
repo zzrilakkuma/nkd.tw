@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Header: React.FC = () => {
@@ -75,6 +75,9 @@ const Header: React.FC = () => {
                 <Link to="/profile" className="dropdown-item">
                   個人資料設定
                 </Link>
+                <Link to="/change-password" className="dropdown-item">
+                  修改密碼
+                </Link>
                 {currentUser.isAdmin && (
                   <Link to="/admin" className="dropdown-item">
                     後台管理
@@ -88,7 +91,6 @@ const Header: React.FC = () => {
           ) : (
             <>
               <Link to="/login" className="nav-link">登入</Link>
-              <Link to="/register" className="nav-link">註冊</Link>
             </>
           )}
           <Link to="/cart" className="nav-link cart-link">
@@ -135,6 +137,9 @@ const Header: React.FC = () => {
                 <Link to="/profile" className="mobile-menu-item" onClick={() => setMobileMenuOpen(false)}>
                   個人資料設定
                 </Link>
+                <Link to="/change-password" className="mobile-menu-item" onClick={() => setMobileMenuOpen(false)}>
+                  修改密碼
+                </Link>
                 {currentUser.isAdmin && (
                   <Link to="/admin" className="mobile-menu-item" onClick={() => setMobileMenuOpen(false)}>
                     後台管理
@@ -148,9 +153,6 @@ const Header: React.FC = () => {
               <>
                 <Link to="/login" className="mobile-menu-item" onClick={() => setMobileMenuOpen(false)}>
                   登入
-                </Link>
-                <Link to="/register" className="mobile-menu-item" onClick={() => setMobileMenuOpen(false)}>
-                  註冊
                 </Link>
               </>
             )}

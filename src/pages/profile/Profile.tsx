@@ -33,6 +33,16 @@ const Profile: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  // 公司聯絡資料
+  const [company, setCompany] = useState({
+    company_name: '',
+    contact_name: '',
+    contact_phone: '',
+    tax_id: '',
+  });
+  const [savingCompany, setSavingCompany] = useState(false);
+  const [companySaved, setCompanySaved] = useState(false);
+
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<SavedAddress | null>(null);
@@ -53,6 +63,12 @@ const Profile: React.FC = () => {
             id: a.id || generateId(),
           })));
         }
+        setCompany({
+          company_name: user.company_name || '',
+          contact_name: user.contact_name || '',
+          contact_phone: user.contact_phone || '',
+          tax_id: user.tax_id || '',
+        });
       } catch {
         setLoadError('無法載入個人資料，請確認網路連線');
       }
@@ -81,6 +97,20 @@ const Profile: React.FC = () => {
   const closeModal = () => {
     setModalOpen(false);
     setEditingAddress(null);
+  };
+
+  const saveCompany = async () => {
+    setSavingCompany(true);
+    setCompanySaved(false);
+    try {
+      await authAPI.updateProfile(company);
+      setCompanySaved(true);
+      setTimeout(() => setCompanySaved(false), 2500);
+    } catch {
+      alert('儲存失敗，請再試一次');
+    } finally {
+      setSavingCompany(false);
+    }
   };
 
   const saveAddresses = async (list: SavedAddress[]) => {
@@ -131,6 +161,60 @@ const Profile: React.FC = () => {
             <div>
               <h2 className="profile-username">{currentUser?.username}</h2>
               <p className="profile-email">{currentUser?.email}</p>
+            </div>
+          </div>
+
+          <hr className="profile-divider" />
+
+          <div className="profile-section-header">
+            <div>
+              <h3 className="profile-section-title">公司聯絡資料</h3>
+              <p className="profile-section-desc">供管理員核對訂單與聯絡使用</p>
+            </div>
+          </div>
+
+          <div className="profile-form" style={{ marginBottom: 8 }}>
+            <div className="form-row">
+              <div className="form-group">
+                <label>公司名稱</label>
+                <input
+                  value={company.company_name}
+                  onChange={(e) => setCompany({ ...company, company_name: e.target.value })}
+                  placeholder="例：星辰貿易有限公司"
+                />
+              </div>
+              <div className="form-group">
+                <label>統一編號</label>
+                <input
+                  value={company.tax_id}
+                  onChange={(e) => setCompany({ ...company, tax_id: e.target.value })}
+                  placeholder="8 碼統編"
+                />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>聯絡人</label>
+                <input
+                  value={company.contact_name}
+                  onChange={(e) => setCompany({ ...company, contact_name: e.target.value })}
+                  placeholder="王小明"
+                />
+              </div>
+              <div className="form-group">
+                <label>聯絡電話</label>
+                <input
+                  value={company.contact_phone}
+                  onChange={(e) => setCompany({ ...company, contact_phone: e.target.value })}
+                  placeholder="0912345678"
+                />
+              </div>
+            </div>
+            <div className="profile-actions">
+              {companySaved && <span style={{ color: '#4ade80', fontSize: 13, alignSelf: 'center' }}>已儲存 ✓</span>}
+              <button type="button" className="btn-save-profile" onClick={saveCompany} disabled={savingCompany}>
+                {savingCompany ? '儲存中...' : '儲存公司資料'}
+              </button>
             </div>
           </div>
 
