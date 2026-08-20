@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { CartItem, OrderStatus, DeliveryMethod, PickupLocation } from '../../types';
-import { formatPrice, calculateCartTotal, generateId } from '../../utils';
+import { CartItem, DeliveryMethod, PickupLocation } from '../../types';
+import { formatPrice, calculateCartTotal } from '../../utils';
 import { DELIVERY_OPTIONS, DEFAULT_SHIPPING_FEE } from '../../utils/delivery';
 import { ordersAPI, authAPI, pickupLocationsAPI } from '../../services/api';
 import '../../styles/orders.css';
@@ -115,9 +115,9 @@ const Checkout: React.FC = () => {
       shipping_info = { ...shipping_info, name: data.name, phone: data.phone, pickup_location_id: pickupId };
     }
 
-    const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
     setSubmitting(true);
     try {
+      // 訂單一律由後端建立；失敗就明確報錯，絕不在本地假造訂單
       const apiResponse = await ordersAPI.create({
         items: cartItems.map(item => ({ sku_id: item.sku.id, quantity: item.quantity })),
         delivery_method: method,
@@ -138,39 +138,12 @@ const Checkout: React.FC = () => {
         notes: data.notes,
       };
 
-      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-      orders.push(order);
-      localStorage.setItem('orders', JSON.stringify(orders));
-
       localStorage.removeItem('cart');
       window.dispatchEvent(new Event('cartUpdated'));
       navigate('/order-confirm', { state: { order } });
     } catch (error: any) {
-      // 後端錯誤（如缺欄位、庫存不足）
       const detail = error.response?.data?.detail;
-      if (detail) {
-        alert(typeof detail === 'string' ? detail : '建立訂單失敗');
-      } else {
-        // 離線備援
-        const order = {
-          id: generateId(),
-          userId: currentUser?.id || 'guest',
-          items: cartItems,
-          subtotal,
-          shippingFee,
-          totalAmount: estimatedTotal,
-          status: OrderStatus.PENDING_REVIEW,
-          deliveryMethod: method,
-          createdAt: new Date().toISOString(),
-          shippingInfo: shipping_info,
-          notes: data.notes,
-        };
-        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-        orders.push(order);
-        localStorage.setItem('orders', JSON.stringify(orders));
-        localStorage.removeItem('cart');
-        navigate('/order-confirm', { state: { order } });
-      }
+      alert(typeof detail === 'string' ? detail : '訂單送出失敗，請確認網路後再試一次；若持續失敗請聯絡客服。');
     } finally {
       setSubmitting(false);
     }

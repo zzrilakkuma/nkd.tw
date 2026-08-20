@@ -18,25 +18,22 @@ const MyOrders: React.FC = () => {
   const [inputError, setInputError] = useState('');
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'closed'>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
       const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
 
-      if (!currentUser) {
+      if (!currentUser || !currentUser.token) {
         navigate('/login');
         return;
       }
 
       try {
-        // 檢查是否有 token
-        if (currentUser && currentUser.token) {
-          // 有 token，從 API 獲取訂單
-          try {
-            const apiOrders = await ordersAPI.getUserOrders();
+        // 訂單一律以後端為準（不使用 localStorage 備援，避免顯示未成立的訂單）
+        const apiOrders = await ordersAPI.getUserOrders();
 
-            // 轉換 API 回應為前端格式
-            const formattedOrders = apiOrders.map((apiOrder: any) => ({
+        const formattedOrders = apiOrders.map((apiOrder: any) => ({
               id: apiOrder.id,
               userId: apiOrder.user_id,
               items: apiOrder.items.map((item: any) => ({
@@ -74,36 +71,15 @@ const MyOrders: React.FC = () => {
               paymentInfo: apiOrder.payment_info
             }));
 
-            // 按日期排序，最新的在前面
-            const sortedOrders = formattedOrders.sort((a: Order, b: Order) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
+        // 按日期排序，最新的在前面
+        const sortedOrders = formattedOrders.sort((a: Order, b: Order) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
 
-            setOrders(sortedOrders);
-
-            // 同步更新 localStorage
-            localStorage.setItem('orders', JSON.stringify(sortedOrders));
-          } catch (apiError) {
-            console.warn('API 獲取訂單失敗，使用 localStorage 備援:', apiError);
-            // API 失敗時使用 localStorage
-            const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-            const userOrders = allOrders.filter((order: Order) => order.userId === currentUser.id);
-            const sortedOrders = userOrders.sort((a: Order, b: Order) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
-            setOrders(sortedOrders);
-          }
-        } else {
-          // 沒有 token，使用 localStorage
-          const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-          const userOrders = allOrders.filter((order: Order) => order.userId === currentUser.id);
-          const sortedOrders = userOrders.sort((a: Order, b: Order) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-          setOrders(sortedOrders);
-        }
+        setOrders(sortedOrders);
       } catch (error) {
         console.error('獲取訂單失敗:', error);
+        setLoadError('無法載入訂單，請確認網路後重新整理頁面');
       } finally {
         setLoading(false);
       }
@@ -241,7 +217,14 @@ const MyOrders: React.FC = () => {
           </div>
         )}
 
-        {orders.length === 0 ? (
+        {loadError ? (
+          <div className="empty-orders">
+            <p style={{ color: '#f87171' }}>{loadError}</p>
+            <button onClick={() => window.location.reload()} className="btn btn-primary" style={{ marginTop: 12 }}>
+              重新載入
+            </button>
+          </div>
+        ) : orders.length === 0 ? (
           <div className="empty-orders">
             <div className="empty-icon">📦</div>
             <h3>您還沒有任何訂單</h3>
