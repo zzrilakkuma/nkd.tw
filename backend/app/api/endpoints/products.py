@@ -68,6 +68,11 @@ def create_product(
 ):
     payload = data.model_dump()
     skus_data = payload.pop("skus", None) or []
+    if not skus_data:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail="商品至少需要一個規格（SKU），請提供售價與庫存",
+        )
 
     product = Product(id=str(uuid.uuid4()), **payload)
     for s in skus_data:
@@ -187,6 +192,12 @@ def delete_sku(
     sku = db.query(SKU).filter(SKU.id == sku_id, SKU.product_id == product_id).first()
     if not sku:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="SKU 不存在")
+    remaining = db.query(SKU).filter(SKU.product_id == product_id).count()
+    if remaining <= 1:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail="每個商品至少需保留一個規格（SKU），無法刪除最後一個",
+        )
     sku_label = " / ".join(x for x in [sku.flavor, sku.spec] if x) or "預設"
     log_action(
         db, admin, "SKU_DELETE", "sku", sku.id,

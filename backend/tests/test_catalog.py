@@ -70,3 +70,31 @@ class TestProducts:
         assert fresh["stock"] == 10        # 實體庫存不動
         assert fresh["reserved"] == 3      # 保留 3
         assert fresh["available"] == 7     # 可售 = 10 - 3
+
+
+class TestSkuRequired:
+    def test_create_product_without_sku_rejected(self, client, admin_headers):
+        res = client.post("/api/v1/products", headers=admin_headers, json={
+            "name": "沒有規格的商品", "skus": [],
+        })
+        assert res.status_code == 400
+        assert "至少需要一個規格" in res.json()["detail"]
+
+        res = client.post("/api/v1/products", headers=admin_headers, json={
+            "name": "沒有規格的商品",
+        })
+        assert res.status_code == 400
+
+    def test_cannot_delete_last_sku(self, client, admin_headers, make_product):
+        product, sku = make_product()
+        res = client.delete(f"/api/v1/products/{product['id']}/skus/{sku['id']}",
+                            headers=admin_headers)
+        assert res.status_code == 400
+        assert "至少需保留一個規格" in res.json()["detail"]
+
+        # 有第二個 SKU 之後就可以刪
+        second = client.post(f"/api/v1/products/{product['id']}/skus", headers=admin_headers,
+                             json={"price": 999, "stock": 5}).json()
+        res = client.delete(f"/api/v1/products/{product['id']}/skus/{second['id']}",
+                            headers=admin_headers)
+        assert res.status_code == 200

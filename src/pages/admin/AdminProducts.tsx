@@ -11,6 +11,8 @@ interface ProductForm {
   main_image: string;
   is_published: boolean;
   // 建立時的初始 SKU
+  flavor: string;
+  spec: string;
   price: string;
   stock: string;
 }
@@ -22,6 +24,8 @@ const EMPTY_FORM: ProductForm = {
   category_id: '',
   main_image: '',
   is_published: true,
+  flavor: '',
+  spec: '',
   price: '',
   stock: '',
 };
@@ -125,6 +129,8 @@ const AdminProducts: React.FC = () => {
       category_id: product.category_id || '',
       main_image: product.main_image || '',
       is_published: product.is_published ?? true,
+      flavor: '',
+      spec: '',
       price: '',
       stock: '',
     });
@@ -168,7 +174,7 @@ const AdminProducts: React.FC = () => {
           main_image: form.main_image.trim(),
           is_published: form.is_published,
           images: [],
-          skus: [{ flavor: '', spec: '', unit: '件', price, stock, is_active: true }],
+          skus: [{ flavor: form.flavor.trim(), spec: form.spec.trim(), unit: '件', price, stock, is_active: true }],
         };
         await productsAPI.create(payload);
       }
@@ -476,14 +482,27 @@ const AdminProducts: React.FC = () => {
               </div>
 
               {!editingProduct && (
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>初始 SKU 售價（TWD）*</label>
-                    <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} min="0" placeholder="760" />
+                <div className="initial-sku-block">
+                  <div className="initial-sku-title">初始規格（SKU）*　<span>每個商品至少需要一個規格；建立後可在「SKU 管理」新增更多</span></div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>口味（選填）</label>
+                      <input value={form.flavor} onChange={e => setForm({ ...form, flavor: e.target.value })} placeholder="例：佛手柑" />
+                    </div>
+                    <div className="form-group">
+                      <label>規格（選填）</label>
+                      <input value={form.spec} onChange={e => setForm({ ...form, spec: e.target.value })} placeholder="例：100g" />
+                    </div>
                   </div>
-                  <div className="form-group">
-                    <label>初始 SKU 庫存 *</label>
-                    <input type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} min="0" placeholder="100" />
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>售價（TWD）*</label>
+                      <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} min="0" placeholder="760" />
+                    </div>
+                    <div className="form-group">
+                      <label>庫存 *</label>
+                      <input type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} min="0" placeholder="100" />
+                    </div>
                   </div>
                 </div>
               )}
