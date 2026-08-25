@@ -801,37 +801,61 @@ const TaxonomyManager: React.FC<TaxonomyProps> = ({ brands, categories, onClose,
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-          <div>
-            <h4>品牌</h4>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              <input value={newBrand} onChange={e => setNewBrand(e.target.value)} placeholder="新品牌名稱" />
-              <button className="btn-save" disabled={busy} onClick={addBrand}>新增</button>
+        <div className="taxonomy-body">
+          <p className="taxonomy-hint">
+            品牌＝製造商（例：DarkSide、Kalee）；類別＝商品種類（例：水煙草、配件）。
+            兩者都會成為商店與後台的篩選條件，每個商品各選一個。
+          </p>
+          <div className="taxonomy-grid">
+            <div className="taxonomy-col">
+              <div className="taxonomy-col-head">
+                <h4>品牌</h4>
+                <span className="taxonomy-count">{brands.length}</span>
+              </div>
+              <div className="taxonomy-add">
+                <input
+                  value={newBrand}
+                  onChange={e => setNewBrand(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') addBrand(); }}
+                  placeholder="新品牌名稱"
+                />
+                <button className="btn-save" disabled={busy || !newBrand.trim()} onClick={addBrand}>新增</button>
+              </div>
+              <ul className="taxonomy-list">
+                {brands.length === 0 && <li className="taxonomy-empty">尚無品牌</li>}
+                {brands.map(b => (
+                  <li key={b.id} className="taxonomy-item">
+                    <span>{b.name}</span>
+                    <button className="btn-delete" disabled={busy} onClick={() => delBrand(b.id)}>刪除</button>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {brands.map(b => (
-                <li key={b.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
-                  <span>{b.name}</span>
-                  <button className="btn-delete" disabled={busy} onClick={() => delBrand(b.id)}>刪除</button>
-                </li>
-              ))}
-            </ul>
-          </div>
 
-          <div>
-            <h4>類別</h4>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              <input value={newCategory} onChange={e => setNewCategory(e.target.value)} placeholder="新類別名稱" />
-              <button className="btn-save" disabled={busy} onClick={addCategory}>新增</button>
+            <div className="taxonomy-col">
+              <div className="taxonomy-col-head">
+                <h4>類別</h4>
+                <span className="taxonomy-count">{categories.length}</span>
+              </div>
+              <div className="taxonomy-add">
+                <input
+                  value={newCategory}
+                  onChange={e => setNewCategory(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') addCategory(); }}
+                  placeholder="新類別名稱"
+                />
+                <button className="btn-save" disabled={busy || !newCategory.trim()} onClick={addCategory}>新增</button>
+              </div>
+              <ul className="taxonomy-list">
+                {categories.length === 0 && <li className="taxonomy-empty">尚無類別</li>}
+                {categories.map(c => (
+                  <li key={c.id} className="taxonomy-item">
+                    <span>{c.name}</span>
+                    <button className="btn-delete" disabled={busy} onClick={() => delCategory(c.id)}>刪除</button>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {categories.map(c => (
-                <li key={c.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
-                  <span>{c.name}</span>
-                  <button className="btn-delete" disabled={busy} onClick={() => delCategory(c.id)}>刪除</button>
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
       </div>

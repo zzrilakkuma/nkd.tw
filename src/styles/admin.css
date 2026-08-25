@@ -1650,3 +1650,98 @@ tbody tr:hover {
   font-size: 12px;
   color: #9a9aa5;
 }
+
+/* ===== 品牌／類別管理彈窗 ===== */
+.taxonomy-body {
+  padding: 0 28px 28px;
+}
+.taxonomy-hint {
+  font-size: 12px;
+  color: var(--color-text-muted, #9a9aa5);
+  line-height: 1.7;
+  margin: 0 0 18px;
+  padding: 10px 14px;
+  background: rgba(139, 92, 246, 0.06);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  border-radius: 10px;
+}
+.taxonomy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.taxonomy-col-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.taxonomy-col-head h4 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-primary, #fff);
+}
+.taxonomy-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+  color: var(--color-text-secondary, #cfcfd6);
+}
+.taxonomy-add {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.taxonomy-add input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--color-text-primary, #fff);
+  font-size: 14px;
+}
+.taxonomy-add input:focus {
+  outline: none;
+  border-color: var(--color-accent-primary, #8b5cf6);
+}
+.taxonomy-add input::placeholder { color: rgba(255, 255, 255, 0.3); }
+.taxonomy-add .btn-save { white-space: nowrap; }
+.taxonomy-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.taxonomy-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  font-size: 14px;
+  color: var(--color-text-primary, #ececf1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.taxonomy-item:last-child { border-bottom: none; }
+.taxonomy-item:hover { background: rgba(255, 255, 255, 0.03); }
+.taxonomy-empty {
+  padding: 16px 14px;
+  font-size: 13px;
+  color: var(--color-text-muted, #8b8b96);
+  text-align: center;
+}
+@media (max-width: 560px) {
+  .taxonomy-grid { grid-template-columns: 1fr; }
+}
