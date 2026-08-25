@@ -164,85 +164,65 @@ const Payment: React.FC = () => {
           </button>
         </div>
 
-        {/* 付款完成彈窗 */}
+        {/* 付款完成彈窗（與我的訂單共用 mo-modal 樣式） */}
         {showPaymentModal && order && (
-          <div className="modal-overlay" onClick={() => setShowPaymentModal(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3>確認轉帳完成</h3>
-                <button
-                  className="modal-close"
-                  onClick={() => setShowPaymentModal(false)}
-                >
-                  ×
-                </button>
+          <div className="mo-modal-overlay" onClick={() => setShowPaymentModal(false)}>
+            <div className="mo-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="mo-modal-head">
+                <div>
+                  <h3>確認轉帳完成</h3>
+                  <p className="mo-modal-sub">提交後訂單將進入「等待入帳確認」</p>
+                </div>
+                <button className="mo-modal-close" onClick={() => setShowPaymentModal(false)}>✕</button>
               </div>
 
-              <div className="modal-body">
-                <div className="order-info-modal">
-                  <p><strong>訂單編號:</strong> {order.id}</p>
-                  <p><strong>轉帳金額:</strong> {formatPrice(order.totalAmount)}</p>
+              <div className="mo-modal-summary">
+                <div>
+                  <span>訂單編號</span>
+                  <strong>#{order.id}</strong>
                 </div>
-
-                <div className="form-group">
-                  <label htmlFor="last5digits">請輸入轉帳帳號末五碼:</label>
-                  <input
-                    type="text"
-                    id="last5digits"
-                    value={last5Digits}
-                    onChange={(e) => {
-                      const inputValue = e.target.value;
-
-                      // 檢查是否包含非數字字符
-                      if (inputValue && !/^[0-9]*$/.test(inputValue)) {
-                        setInputError('請只輸入數字');
-                        return;
-                      }
-
-                      // 清除錯誤訊息
-                      if (inputError) {
-                        setInputError('');
-                      }
-
-                      // 限制長度為5位
-                      if (inputValue.length <= 5) {
-                        setLast5Digits(inputValue);
-                      }
-                    }}
-                    onKeyPress={(e) => {
-                      // 只允許數字鍵
-                      if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab') {
-                        e.preventDefault();
-                        setInputError('請只輸入數字 0-9');
-                      }
-                    }}
-                    placeholder="請輸入5位數字"
-                    maxLength={5}
-                    className={`last5digits-input ${inputError ? 'error' : ''}`}
-                    autoComplete="off"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                  />
-                  {inputError && (
-                    <div className="error-message">{inputError}</div>
-                  )}
-                  <small className="input-help">
-                    請輸入您轉帳帳戶的末五碼數字，用於核對付款資訊
-                  </small>
+                <div>
+                  <span>轉帳金額</span>
+                  <strong className="mo-modal-amount">{formatPrice(order.totalAmount)}</strong>
                 </div>
               </div>
 
-              <div className="modal-footer">
+              <label className="mo-digits-label" htmlFor="last5digits">轉帳帳號末五碼</label>
+              <input
+                type="text"
+                id="last5digits"
+                className={`mo-digits-input ${inputError ? 'error' : ''}`}
+                value={last5Digits}
+                onChange={(e) => {
+                  const inputValue = e.target.value;
+                  if (inputValue && !/^[0-9]*$/.test(inputValue)) {
+                    setInputError('請只輸入數字');
+                    return;
+                  }
+                  if (inputError) setInputError('');
+                  if (inputValue.length <= 5) setLast5Digits(inputValue);
+                }}
+                placeholder="─────"
+                maxLength={5}
+                autoComplete="off"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoFocus
+              />
+              <div className="mo-digits-progress">
+                {[0, 1, 2, 3, 4].map(i => (
+                  <span key={i} className={i < last5Digits.length ? 'filled' : ''} />
+                ))}
+              </div>
+              {inputError && <div className="mo-digits-error">{inputError}</div>}
+              <p className="mo-digits-help">供店家核對入帳使用，請確認與您轉出帳戶的末五碼一致</p>
+
+              <div className="mo-modal-actions">
+                <button className="mo-btn-cancel" onClick={() => setShowPaymentModal(false)}>取消</button>
                 <button
-                  className="btn btn-secondary"
-                  onClick={() => setShowPaymentModal(false)}
-                >
-                  取消
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={submitPaymentComplete}
+                  className="mo-btn-primary"
                   disabled={last5Digits.length !== 5}
+                  onClick={submitPaymentComplete}
                 >
                   確認提交
                 </button>

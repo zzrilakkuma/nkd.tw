@@ -229,6 +229,7 @@ tbody tr:hover {
   font-weight: 600;
   letter-spacing: 0.5px;
   display: inline-block;
+  white-space: nowrap;
 }
 
 .status-pending {
@@ -390,6 +391,7 @@ tbody tr:hover {
   border-radius: 20px;
   font-size: 11px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .stock-badge {
@@ -400,6 +402,7 @@ tbody tr:hover {
   background: rgba(16, 185, 129, 0.15);
   color: #34d399;
   border: 1px solid rgba(16, 185, 129, 0.25);
+  white-space: nowrap;
 }
 
 .stock-badge.low-stock {
@@ -499,23 +502,25 @@ tbody tr:hover {
 }
 
 .modal-close {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  border: none;
   color: var(--color-text-muted);
-  font-size: 16px;
+  font-size: 14px;
+  line-height: 1;
   cursor: pointer;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
 }
 
 .modal-close:hover {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
 .modal-form {

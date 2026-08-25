@@ -419,144 +419,8 @@
 }
 
 /* 彈窗樣式 */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
+/* （舊付款彈窗樣式已移除：Payment 頁改用下方 mo-modal 系列，避免全域污染其他 modal） */
 
-.modal-content {
-  background: #16213e;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  max-width: 500px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  border: 1px solid rgba(102, 126, 234, 0.3);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 25px;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #ffffff;
-  font-size: 20px;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: #6c757d;
-  cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background 0.2s ease;
-}
-
-.modal-close:hover {
-  background: #f8f9fa;
-  color: #495057;
-}
-
-.modal-body {
-  padding: 25px;
-}
-
-.order-info-modal {
-  background: #0d0f17;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border: 1px solid rgba(102, 126, 234, 0.2);
-}
-
-.order-info-modal p {
-  margin: 8px 0;
-  color: #c0c0c0;
-}
-
-.order-info-modal p strong {
-  color: #ffffff;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.last5digits-input {
-  width: 100%;
-  padding: 12px 15px;
-  border: 2px solid rgba(102, 126, 234, 0.3);
-  border-radius: 6px;
-  font-size: 16px;
-  font-family: monospace;
-  letter-spacing: 2px;
-  text-align: center;
-  transition: border-color 0.3s ease;
-  background: #0d0f17;
-  color: #ffffff;
-  box-sizing: border-box;
-}
-
-.last5digits-input:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.last5digits-input.error {
-  border-color: #dc3545;
-  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
-}
-
-.error-message {
-  color: #dc3545;
-  font-size: 12px;
-  margin-top: 5px;
-  font-weight: 500;
-}
-
-.input-help {
-  display: block;
-  margin-top: 5px;
-  color: #a0a0a0;
-  font-size: 12px;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 20px 25px;
-  border-top: 1px solid #e9ecef;
-}
 
 .btn {
   padding: 10px 20px;
@@ -1078,15 +942,21 @@
 }
 .mo-modal-close {
   border: none;
-  background: rgba(255, 255, 255, 0.06);
-  color: #cfcfd6;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  background: transparent;
+  color: #9a9aa5;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
   cursor: pointer;
   font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
 }
-.mo-modal-close:hover { background: rgba(255, 255, 255, 0.12); }
+.mo-modal-close:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 
 .mo-modal-summary {
   display: grid;

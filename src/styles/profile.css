@@ -262,18 +262,25 @@
 }
 
 .addr-modal-close {
-  background: none;
+  background: transparent;
   border: none;
   color: var(--color-text-muted);
-  font-size: 16px;
+  font-size: 14px;
+  line-height: 1;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: color 0.2s;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
 }
 
 .addr-modal-close:hover {
-  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
 /* 表單 */
