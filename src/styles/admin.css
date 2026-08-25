@@ -465,9 +465,10 @@ tbody tr:hover {
   justify-content: center;
   z-index: 1000;
   backdrop-filter: blur(4px);
-  /* 內容比視窗高時整層捲動，避免 modal 頂部被切掉 */
+  /* 內容比視窗高時整層捲動，避免 modal 頂部被切掉；
+     上方保留空間避開 sticky header */
   overflow-y: auto;
-  padding: 32px 16px;
+  padding: 110px 16px 40px;
 }
 
 .modal {

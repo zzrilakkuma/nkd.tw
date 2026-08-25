@@ -90,7 +90,8 @@ code {
   margin: 0 auto;
   padding: 0 20px;
   position: relative;
-  z-index: 1;
+  /* 注意：不要在此設 z-index —— 會建立 stacking context，
+     把內部 modal 的 z-index 困住、墊在 sticky header 之下 */
 }
 
 /* 按鈕基礎樣式 - Glass Morphism */
