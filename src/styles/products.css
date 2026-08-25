@@ -141,41 +141,40 @@
   animation-play-state: paused;
 }
 
-/* 分類選單 */
+/* 分類選單（深色玻璃膠囊） */
 .category-tabs {
   display: flex;
   justify-content: center;
-  gap: 15px;
-  margin: 40px 0;
+  gap: 10px;
+  margin: 36px 0 28px;
   flex-wrap: wrap;
 }
 
 .category-tab {
-  padding: 12px 30px;
-  border: 2px solid #e9ecef;
-  background: white;
-  color: #6c757d;
-  border-radius: 30px;
+  padding: 10px 26px;
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #c9c9d4;
+  border-radius: 999px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
+  transition: all 0.2s ease;
 }
 
 .category-tab:hover {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: transparent;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  border-color: rgba(139, 92, 246, 0.6);
+  color: #fff;
+  background: rgba(139, 92, 246, 0.1);
 }
 
 .category-tab.active {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: #fff;
   border-color: transparent;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 16px rgba(118, 75, 162, 0.45);
 }
 
 .products-grid {
