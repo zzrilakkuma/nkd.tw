@@ -61,6 +61,8 @@ const MyOrders: React.FC = () => {
                 quantity: item.quantity
               })),
               subtotal: apiOrder.subtotal,
+              discount: apiOrder.discount,
+              invoice: apiOrder.invoice,
               shippingFee: apiOrder.shipping_fee,
               totalAmount: apiOrder.total_amount,
               status: apiOrder.status,
@@ -336,10 +338,16 @@ const MyOrders: React.FC = () => {
                             <p>地址：{order.shippingInfo.postalCode} {order.shippingInfo.city} {order.shippingInfo.address}</p>
                           )}
                           {order.shippingInfo.note && <p>備註：{order.shippingInfo.note}</p>}
+                          {order.invoice && (
+                            <p>發票：統編 {order.invoice.tax_id}／{order.invoice.company_name}</p>
+                          )}
                         </div>
                         <div className="mo-detail-block mo-detail-amounts">
                           <h4>金額</h4>
                           <p><span>商品小計</span><span>{formatPrice(order.subtotal ?? order.totalAmount)}</span></p>
+                          {(order.discount ?? 0) > 0 && (
+                            <p style={{ color: '#9ae6b4' }}><span>折扣</span><span>-{formatPrice(order.discount ?? 0)}</span></p>
+                          )}
                           <p><span>運費</span><span>{order.status === 'pending_review' ? '待核對' : formatPrice(order.shippingFee ?? 0)}</span></p>
                           <p className="mo-amount-final"><span>應付金額</span><span>{order.status === 'pending_review' ? '核對後確認' : formatPrice(order.totalAmount)}</span></p>
                         </div>

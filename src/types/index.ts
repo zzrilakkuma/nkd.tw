@@ -69,6 +69,8 @@ export interface Order {
   userId: string;
   items: CartItem[];
   subtotal?: number;
+  discount?: number;
+  invoice?: { tax_id: string; company_name: string } | null;
   shippingFee?: number;
   totalAmount: number;
   status: OrderStatus;

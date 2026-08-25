@@ -10,12 +10,13 @@ from app.models.order import Order, OrderItem, OrderStatus, DeliveryMethod
 from app.models.product import Product, SKU
 from app.models.pickup_location import PickupLocation
 from app.models.user import User
-from app.schemas.order import OrderCreate, StatusChange, VerifyOrder, PaymentSubmit, OrderResponse
+from app.schemas.order import OrderCreate, StatusChange, VerifyOrder, UpdateOrderItems, PaymentSubmit, OrderResponse
 from app.api.dependencies import get_current_user, get_current_admin_user
 from app.services.order_state import (
     can_transition,
     recompute_totals,
     apply_inventory_on_transition,
+    release_reservation,
 )
 from app.services.order_expiry import expire_overdue_orders, is_overdue
 from app.services.audit import log_action
@@ -99,6 +100,17 @@ def create_order(
     shipping_info = _build_shipping_info(method, order_data.shipping_info, db)
     default_fee = settings.default_shipping_fees.get(method.value, 0)
 
+    # 發票資訊（選填）：統編需為 8 碼數字
+    invoice = None
+    if order_data.invoice is not None:
+        tax_id = order_data.invoice.tax_id.strip()
+        company = order_data.invoice.company_name.strip()
+        if not (tax_id.isdigit() and len(tax_id) == 8):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="統一編號需為 8 碼數字")
+        if not company:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="請填寫發票抬頭（公司名稱）")
+        invoice = {"tax_id": tax_id, "company_name": company}
+
     order = Order(
         id=generate_order_id(),
         user_id=current_user.id,
@@ -108,6 +120,7 @@ def create_order(
         shipping_fee=default_fee,
         total_amount=0,
         shipping_info=shipping_info,
+        invoice=invoice,
     )
 
     for item_data in order_data.items:
@@ -230,6 +243,80 @@ def cancel_order(
     return order
 
 
+
+@router.put("/{order_id}/items", response_model=OrderResponse)
+def update_order_items(
+    order_id: str,
+    data: UpdateOrderItems,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin_user),
+):
+    """管理員於「等待核對」階段調整品項/數量（可同時設定折扣）。
+
+    作法：先釋放原保留 → 依新內容重建項目並重新保留（檢查可售量）→ 重算金額。
+    """
+    order = _get_order_or_404(db, order_id)
+    if OrderStatus(order.status) != OrderStatus.PENDING_REVIEW:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="僅能在「等待核對」階段調整品項")
+    if not data.items:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="訂單至少需一個品項")
+
+    before_items = [
+        {"sku_id": i.sku_id, "name": (i.product.name if i.product else i.product_id),
+         "quantity": i.quantity, "price": i.price}
+        for i in order.items
+    ]
+
+    # 1) 釋放原保留、移除原項目
+    release_reservation(db, order)
+    for item in list(order.items):
+        db.delete(item)
+    order.items.clear()
+    db.flush()
+
+    # 2) 依新內容建立項目並重新保留
+    for item_data in data.items:
+        sku = db.query(SKU).filter(SKU.id == item_data.sku_id).first()
+        if not sku or not sku.is_active:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"SKU {item_data.sku_id} 不存在或已下架")
+        if item_data.quantity <= 0:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="數量必須大於 0")
+        if sku.available < item_data.quantity:
+            product = db.query(Product).filter(Product.id == sku.product_id).first()
+            name = product.name if product else sku.product_id
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"商品 {name} 庫存不足")
+
+        order.items.append(OrderItem(
+            order_id=order.id,
+            product_id=sku.product_id,
+            sku_id=sku.id,
+            quantity=item_data.quantity,
+            price=sku.price,
+        ))
+        sku.reserved = (sku.reserved or 0) + item_data.quantity
+
+    # 3) 折扣（可選）+ 重算
+    if data.discount is not None:
+        if data.discount < 0:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="折扣不可為負數")
+        order.discount = data.discount
+    recompute_totals(order)
+
+    after_items = [
+        {"sku_id": i.sku_id, "quantity": i.quantity, "price": i.price}
+        for i in order.items
+    ]
+    log_action(
+        db, admin, "ORDER_ITEMS_UPDATE", "order", order.id,
+        summary=f"調整訂單 #{order.id} 品項（{len(before_items)} → {len(after_items)} 項），小計 {order.subtotal:.0f}、折扣 {order.discount:.0f}",
+        before={"items": before_items},
+        after={"items": after_items, "subtotal": order.subtotal, "discount": order.discount},
+    )
+    db.commit()
+    db.refresh(order)
+    return order
+
+
 @router.post("/{order_id}/verify", response_model=OrderResponse)
 def verify_order(
     order_id: str,
@@ -244,8 +331,13 @@ def verify_order(
     if data.shipping_fee < 0:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="運費不可為負數")
 
+    if data.discount < 0:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="折扣不可為負數")
+
     old_fee = order.shipping_fee
+    old_discount = order.discount
     order.shipping_fee = data.shipping_fee
+    order.discount = data.discount
     recompute_totals(order)  # total = subtotal + shipping_fee
     order.locked = True
     order.status = OrderStatus.PENDING_PAYMENT.value
@@ -253,9 +345,10 @@ def verify_order(
     order.payment_deadline = datetime.utcnow() + timedelta(hours=settings.PAYMENT_DEADLINE_HOURS)
     log_action(
         db, admin, "ORDER_VERIFY", "order", order.id,
-        summary=f"核對完成 #{order.id}：運費 {data.shipping_fee:.0f}、總額 {order.total_amount:.0f}，進入等待付款",
-        before={"status": "pending_review", "shipping_fee": old_fee},
-        after={"status": "pending_payment", "shipping_fee": data.shipping_fee, "total_amount": order.total_amount},
+        summary=f"核對完成 #{order.id}：運費 {data.shipping_fee:.0f}、折扣 {data.discount:.0f}、總額 {order.total_amount:.0f}，進入等待付款",
+        before={"status": "pending_review", "shipping_fee": old_fee, "discount": old_discount},
+        after={"status": "pending_payment", "shipping_fee": data.shipping_fee,
+               "discount": data.discount, "total_amount": order.total_amount},
     )
     db.commit()
     db.refresh(order)

@@ -4,6 +4,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Layout from './components/layout/Layout';
 import AgeVerification from './components/AgeVerification';
 import Home from './pages/Home';
+import Contact from './pages/Contact';
 import Login from './pages/auth/Login';
 import ChangePassword from './pages/auth/ChangePassword';
 import Products from './pages/product/Products';
@@ -25,6 +26,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Products />} />
             <Route path="/home" element={<Home />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login />} />
             <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/cart" element={<Cart />} />

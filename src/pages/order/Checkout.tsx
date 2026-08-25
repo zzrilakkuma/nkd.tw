@@ -15,6 +15,8 @@ interface CheckoutData {
   postalCode: string;
   store_name: string;
   store_code: string;
+  invoice_tax_id: string;
+  invoice_company: string;
   notes?: string;
 }
 
@@ -37,6 +39,7 @@ const Checkout: React.FC = () => {
   const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>([]);
   const [pickupId, setPickupId] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
+  const [needInvoice, setNeedInvoice] = useState(false);
 
   const {
     register,
@@ -115,6 +118,16 @@ const Checkout: React.FC = () => {
       shipping_info = { ...shipping_info, name: data.name, phone: data.phone, pickup_location_id: pickupId };
     }
 
+    // 發票（選填）：勾選後必填統編與公司名稱
+    let invoice: { tax_id: string; company_name: string } | undefined;
+    if (needInvoice) {
+      const taxId = (data.invoice_tax_id || '').trim();
+      const company = (data.invoice_company || '').trim();
+      if (!/^\d{8}$/.test(taxId)) { alert('統一編號需為 8 碼數字'); return; }
+      if (!company) { alert('請填寫發票抬頭（公司名稱）'); return; }
+      invoice = { tax_id: taxId, company_name: company };
+    }
+
     setSubmitting(true);
     try {
       // 訂單一律由後端建立；失敗就明確報錯，絕不在本地假造訂單
@@ -122,6 +135,7 @@ const Checkout: React.FC = () => {
         items: cartItems.map(item => ({ sku_id: item.sku.id, quantity: item.quantity })),
         delivery_method: method,
         shipping_info,
+        invoice,
       });
 
       const order = {
@@ -281,6 +295,30 @@ const Checkout: React.FC = () => {
                   </div>
                 </>
               )}
+
+              {/* 發票資訊（選填） */}
+              <div className="invoice-section">
+                <label className="invoice-toggle">
+                  <input
+                    type="checkbox"
+                    checked={needInvoice}
+                    onChange={e => setNeedInvoice(e.target.checked)}
+                  />
+                  需要開立發票（統編）
+                </label>
+                {needInvoice && (
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>統一編號</label>
+                      <input {...register('invoice_tax_id')} placeholder="8 碼數字" maxLength={8} inputMode="numeric" />
+                    </div>
+                    <div className="form-group">
+                      <label>公司名稱（發票抬頭）</label>
+                      <input {...register('invoice_company')} placeholder="例：星辰貿易有限公司" />
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <div className="form-group">
                 <label htmlFor="notes">配送備註 (選填)</label>

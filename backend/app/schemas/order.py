@@ -42,11 +42,18 @@ class OrderItemResponse(BaseModel):
         from_attributes = True
 
 
+class InvoiceInfo(BaseModel):
+    """發票資訊（選填）"""
+    tax_id: str
+    company_name: str
+
+
 class OrderCreate(BaseModel):
     items: List[OrderItemCreate]
     delivery_method: DeliveryMethod
     # 依配送方式帶不同欄位（宅配 / 7-11 / 自取），由後端依方式驗證必填
     shipping_info: Dict[str, Any]
+    invoice: Optional[InvoiceInfo] = None
 
 
 class StatusChange(BaseModel):
@@ -55,8 +62,15 @@ class StatusChange(BaseModel):
 
 
 class VerifyOrder(BaseModel):
-    """管理員核對完成：輸入運費並鎖定金額，進入等待付款"""
+    """管理員核對完成：輸入運費（可含折扣）並鎖定金額，進入等待付款"""
     shipping_fee: float
+    discount: float = 0
+
+
+class UpdateOrderItems(BaseModel):
+    """管理員於等待核對階段調整品項/數量"""
+    items: List[OrderItemCreate]
+    discount: Optional[float] = None
 
 
 class PaymentSubmit(BaseModel):
@@ -70,6 +84,8 @@ class OrderResponse(BaseModel):
     status: OrderStatus
     delivery_method: Optional[DeliveryMethod] = None
     subtotal: float
+    discount: float
+    invoice: Optional[Dict[str, Any]] = None
     shipping_fee: float
     total_amount: float
     locked: bool

@@ -1567,3 +1567,57 @@ tbody tr:hover {
 @media (max-width: 640px) {
   .audit-diff { grid-template-columns: 1fr; }
 }
+
+/* 抽屜：核對階段品項編輯 */
+.drawer-edit-items {
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+.drawer-edit-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+}
+.drawer-edit-item:last-of-type { border-bottom: none; }
+.drawer-edit-item-name {
+  font-size: 14px;
+  color: #ececf1;
+  flex: 1;
+  min-width: 140px;
+}
+.drawer-edit-item-price {
+  display: block;
+  font-size: 12px;
+  color: #9a9aa5;
+  margin-top: 2px;
+}
+.drawer-edit-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.drawer-edit-item-controls input {
+  width: 56px;
+  text-align: center;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+}
+.qty-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  cursor: pointer;
+}
+.qty-btn:hover { border-color: #8b5cf6; }

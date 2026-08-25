@@ -206,3 +206,87 @@ class TestExpiry:
         res = client.post(f"/api/v1/orders/{oid}/pay", headers=user_headers, json={"last5Digits": "33333"})
         assert res.status_code == 400
         assert client.get(f"/api/v1/orders/{oid}", headers=admin_headers).json()["status"] == "expired"
+
+
+class TestV12InvoiceDiscountItems:
+    def test_invoice_saved_on_order(self, client, user_headers, make_product):
+        _, sku = make_product()
+        res = client.post("/api/v1/orders/", headers=user_headers, json={
+            "items": [{"sku_id": sku["id"], "quantity": 1}],
+            "delivery_method": "home_delivery",
+            "shipping_info": HOME_SHIPPING,
+            "invoice": {"tax_id": "12345678", "company_name": "測試股份有限公司"},
+        })
+        assert res.status_code == 200
+        assert res.json()["invoice"] == {"tax_id": "12345678", "company_name": "測試股份有限公司"}
+
+    def test_invalid_tax_id_rejected(self, client, user_headers, make_product):
+        _, sku = make_product()
+        res = client.post("/api/v1/orders/", headers=user_headers, json={
+            "items": [{"sku_id": sku["id"], "quantity": 1}],
+            "delivery_method": "home_delivery",
+            "shipping_info": HOME_SHIPPING,
+            "invoice": {"tax_id": "123", "company_name": "測試"},
+        })
+        assert res.status_code == 400
+
+    def test_admin_update_items_adjusts_reservation_and_subtotal(
+        self, client, admin_headers, make_product, make_order
+    ):
+        p1, sku1 = make_product(name="商品A", price=100, stock=10)
+        p2, sku2 = make_product(name="商品B", price=200, stock=10)
+        order = make_order(sku1["id"], quantity=2)  # 保留 A×2
+
+        # 改成 A×1 + B×3
+        res = client.put(f"/api/v1/orders/{order['id']}/items", headers=admin_headers, json={
+            "items": [
+                {"sku_id": sku1["id"], "quantity": 1},
+                {"sku_id": sku2["id"], "quantity": 3},
+            ],
+        })
+        assert res.status_code == 200
+        body = res.json()
+        assert body["subtotal"] == 100 * 1 + 200 * 3
+        assert len(body["items"]) == 2
+
+        a = get_sku(client, p1["id"], sku1["id"])
+        b = get_sku(client, p2["id"], sku2["id"])
+        assert a["reserved"] == 1   # 2 → 1
+        assert b["reserved"] == 3   # 0 → 3
+
+    def test_update_items_insufficient_stock_rejected(self, client, admin_headers,
+                                                      make_product, make_order):
+        _, sku = make_product(stock=2)
+        order = make_order(sku["id"], quantity=1)
+        res = client.put(f"/api/v1/orders/{order['id']}/items", headers=admin_headers, json={
+            "items": [{"sku_id": sku["id"], "quantity": 99}],
+        })
+        assert res.status_code == 400
+
+    def test_update_items_only_in_review(self, client, admin_headers, make_product, make_order):
+        _, sku = make_product()
+        order = make_order(sku["id"])
+        client.post(f"/api/v1/orders/{order['id']}/verify", headers=admin_headers,
+                    json={"shipping_fee": 0})
+        res = client.put(f"/api/v1/orders/{order['id']}/items", headers=admin_headers, json={
+            "items": [{"sku_id": sku["id"], "quantity": 2}],
+        })
+        assert res.status_code == 400
+
+    def test_verify_with_discount(self, client, admin_headers, make_product, make_order):
+        _, sku = make_product(price=1000)
+        order = make_order(sku["id"], quantity=2)  # 小計 2000
+        res = client.post(f"/api/v1/orders/{order['id']}/verify", headers=admin_headers,
+                          json={"shipping_fee": 100, "discount": 300})
+        assert res.status_code == 200
+        body = res.json()
+        assert body["discount"] == 300
+        assert body["total_amount"] == 2000 - 300 + 100  # 1800
+
+    def test_customer_cannot_update_items(self, client, user_headers, make_product, make_order):
+        _, sku = make_product()
+        order = make_order(sku["id"])
+        res = client.put(f"/api/v1/orders/{order['id']}/items", headers=user_headers, json={
+            "items": [{"sku_id": sku["id"], "quantity": 5}],
+        })
+        assert res.status_code == 403

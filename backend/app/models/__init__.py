@@ -5,5 +5,6 @@ from app.models.product import Product, SKU
 from app.models.pickup_location import PickupLocation
 from app.models.order import Order, OrderItem
 from app.models.audit_log import AuditLog
+from app.models.image import Image
 
-__all__ = ["User", "Brand", "Category", "Product", "SKU", "PickupLocation", "Order", "OrderItem", "AuditLog"]
+__all__ = ["User", "Brand", "Category", "Product", "SKU", "PickupLocation", "Order", "OrderItem", "AuditLog", "Image"]

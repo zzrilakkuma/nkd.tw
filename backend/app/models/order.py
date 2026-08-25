@@ -31,8 +31,11 @@ class Order(Base):
     delivery_method = Column(String, nullable=True)  # DeliveryMethod.value
 
     subtotal = Column(Float, nullable=False, default=0)       # 商品小計（後端計算）
+    discount = Column(Float, nullable=False, default=0)       # 折扣金額（核對階段由管理員輸入）
     shipping_fee = Column(Float, nullable=False, default=0)   # 運費（P4 由管理員輸入）
-    total_amount = Column(Float, nullable=False)              # = subtotal + shipping_fee
+    total_amount = Column(Float, nullable=False)              # = subtotal - discount + shipping_fee
+
+    invoice = Column(JSON, nullable=True)                     # 發票資訊 {tax_id, company_name}（選填）
 
     locked = Column(Boolean, nullable=False, default=False)   # 核對完成後鎖定
     paid_at = Column(DateTime, nullable=True)                 # 客戶提交付款時間

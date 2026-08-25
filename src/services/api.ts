@@ -207,9 +207,15 @@ export const ordersAPI = {
     return response.data;
   },
 
-  // 管理員：核對完成並輸入運費（等待核對 → 等待付款）
-  verify: async (id: string, shipping_fee: number) => {
-    const response = await api.post(`/orders/${id}/verify`, { shipping_fee });
+  // 管理員：等待核對階段調整品項/數量（可含折扣）
+  updateItems: async (id: string, items: Array<{ sku_id: string; quantity: number }>, discount?: number) => {
+    const response = await api.put(`/orders/${id}/items`, { items, discount });
+    return response.data;
+  },
+
+  // 管理員：核對完成並輸入運費與折扣（等待核對 → 等待付款）
+  verify: async (id: string, shipping_fee: number, discount = 0) => {
+    const response = await api.post(`/orders/${id}/verify`, { shipping_fee, discount });
     return response.data;
   },
 
@@ -222,6 +228,19 @@ export const ordersAPI = {
   getAllOrders: async () => {
     const response = await api.get('/orders/admin/all');
     return response.data;
+  },
+};
+
+// 圖片 API（上傳後回傳絕對網址，跨網域部署也能正確顯示）
+export const API_ORIGIN = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+export const imagesAPI = {
+  upload: async (file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    const response = await api.post('/images', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return { ...response.data, absoluteUrl: API_ORIGIN + response.data.url };
   },
 };
 

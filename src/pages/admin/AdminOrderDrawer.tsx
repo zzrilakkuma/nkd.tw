@@ -9,7 +9,12 @@ interface Props {
   order: ApiOrder | null;
   onClose: () => void;
   onStatusChange: (orderId: string, status: OrderStatus) => Promise<void>;
-  onVerify: (orderId: string, shippingFee: number) => Promise<void>;
+  onVerify: (orderId: string, shippingFee: number, discount?: number) => Promise<void>;
+  onUpdateItems: (
+    orderId: string,
+    items: Array<{ sku_id: string; quantity: number }>,
+    discount?: number,
+  ) => Promise<void>;
   updatingId: string | null;
 }
 
@@ -22,13 +27,37 @@ const STATUS_STEPS = [
   OrderStatus.COMPLETED,
 ];
 
-const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onVerify, updatingId }) => {
-  const [feeInput, setFeeInput] = useState<string>('');
+interface EditItem {
+  sku_id: string;
+  name: string;
+  skuLabel: string;
+  price: number;
+  quantity: number;
+}
 
-  // 進入不同訂單時，預填目前運費
+const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onVerify, onUpdateItems, updatingId }) => {
+  const [feeInput, setFeeInput] = useState<string>('');
+  const [discountInput, setDiscountInput] = useState<string>('0');
+  const [editItems, setEditItems] = useState<EditItem[]>([]);
+
+  // 進入不同訂單時，預填目前運費/折扣/品項
   useEffect(() => {
-    if (order) setFeeInput(String(order.shipping_fee ?? 0));
-  }, [order?.id]); // eslint-disable-line
+    if (order) {
+      setFeeInput(String(order.shipping_fee ?? 0));
+      setDiscountInput(String(order.discount ?? 0));
+      setEditItems(
+        order.items
+          .filter(i => i.sku_id)
+          .map(i => ({
+            sku_id: i.sku_id as string,
+            name: i.product?.name || i.product_id,
+            skuLabel: [i.sku?.flavor, i.sku?.spec].filter(Boolean).join(' / '),
+            price: i.price,
+            quantity: i.quantity,
+          }))
+      );
+    }
+  }, [order?.id, order?.items]); // eslint-disable-line
 
   // ESC 關閉
   useEffect(() => {
@@ -145,6 +174,14 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
                   <span className="info-value">{order.shipping_info.note}</span>
                 </div>
               )}
+              {order.invoice && (
+                <div className="info-row">
+                  <span className="info-label">發票</span>
+                  <span className="info-value">
+                    統編 {order.invoice.tax_id}／{order.invoice.company_name}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -179,6 +216,12 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
               <span>商品小計</span>
               <span>{formatPrice(order.subtotal)}</span>
             </div>
+            {order.discount > 0 && (
+              <div className="order-total-row" style={{ fontWeight: 400, fontSize: 14, color: '#9ae6b4' }}>
+                <span>折扣</span>
+                <span>-{formatPrice(order.discount)}</span>
+              </div>
+            )}
             <div className="order-total-row" style={{ fontWeight: 400, fontSize: 14 }}>
               <span>運費</span>
               <span>{formatPrice(order.shipping_fee)}</span>
@@ -210,30 +253,103 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
           <div className="drawer-section">
             <h4>操作</h4>
 
-            {/* 等待核對：輸入運費 → 核對完成 */}
+            {/* 等待核對：品項調整 + 折扣 + 運費 → 核對完成 */}
             {order.status === OrderStatus.PENDING_REVIEW ? (
               <div>
                 <p className="delivery-note-hint">
-                  請先與客戶確認此商品數量是否適用「{deliveryLabel(order.delivery_method)}」，
-                  並輸入實際運費後點「核對完成」。核對完成後金額鎖定並進入等待付款。
+                  與客戶確認後可於此調整品項數量與折扣，再輸入實際運費並點「核對完成」。
+                  核對完成後金額鎖定並進入等待付款。
                 </p>
-                <div className="form-group" style={{ maxWidth: 220 }}>
-                  <label>運費（TWD）</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={feeInput}
-                    onChange={e => setFeeInput(e.target.value)}
-                  />
+
+                {/* 品項調整 */}
+                <div className="drawer-edit-items">
+                  {editItems.map((it, idx) => (
+                    <div key={it.sku_id} className="drawer-edit-item">
+                      <div className="drawer-edit-item-name">
+                        {it.name}
+                        {it.skuLabel && <span className="item-sku"> · {it.skuLabel}</span>}
+                        <span className="drawer-edit-item-price">{formatPrice(it.price)}</span>
+                      </div>
+                      <div className="drawer-edit-item-controls">
+                        <button
+                          className="qty-btn"
+                          onClick={() => setEditItems(prev => prev.map((x, i) =>
+                            i === idx ? { ...x, quantity: Math.max(1, x.quantity - 1) } : x))}
+                        >−</button>
+                        <input
+                          type="number"
+                          min={1}
+                          value={it.quantity}
+                          onChange={e => {
+                            const v = parseInt(e.target.value, 10);
+                            setEditItems(prev => prev.map((x, i) =>
+                              i === idx ? { ...x, quantity: isNaN(v) ? 1 : Math.max(1, v) } : x));
+                          }}
+                        />
+                        <button
+                          className="qty-btn"
+                          onClick={() => setEditItems(prev => prev.map((x, i) =>
+                            i === idx ? { ...x, quantity: x.quantity + 1 } : x))}
+                        >＋</button>
+                        <button
+                          className="btn-delete"
+                          disabled={editItems.length <= 1}
+                          title={editItems.length <= 1 ? '訂單至少需一個品項' : '移除品項'}
+                          onClick={() => setEditItems(prev => prev.filter((_, i) => i !== idx))}
+                        >移除</button>
+                      </div>
+                    </div>
+                  ))}
+                  <div style={{ textAlign: 'right', marginTop: 8 }}>
+                    <button
+                      className="btn-edit"
+                      disabled={updatingId === order.id || editItems.length === 0}
+                      onClick={() => {
+                        const d = parseFloat(discountInput);
+                        onUpdateItems(
+                          order.id,
+                          editItems.map(x => ({ sku_id: x.sku_id, quantity: x.quantity })),
+                          isNaN(d) ? undefined : Math.max(0, d),
+                        );
+                      }}
+                    >
+                      儲存品項調整
+                    </button>
+                  </div>
                 </div>
+
+                {/* 折扣 + 運費 */}
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  <div className="form-group" style={{ maxWidth: 160 }}>
+                    <label>折扣（TWD）</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={discountInput}
+                      onChange={e => setDiscountInput(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group" style={{ maxWidth: 160 }}>
+                    <label>運費（TWD）</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={feeInput}
+                      onChange={e => setFeeInput(e.target.value)}
+                    />
+                  </div>
+                </div>
+
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
                   <button
                     className="btn-save"
                     disabled={updatingId === order.id}
                     onClick={() => {
                       const fee = parseFloat(feeInput);
+                      const d = parseFloat(discountInput);
                       if (isNaN(fee) || fee < 0) { alert('請輸入有效運費'); return; }
-                      onVerify(order.id, fee);
+                      if (isNaN(d) || d < 0) { alert('請輸入有效折扣（可為 0）'); return; }
+                      onVerify(order.id, fee, d);
                     }}
                   >
                     核對完成（進入待付款）

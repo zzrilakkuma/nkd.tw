@@ -93,6 +93,7 @@ def apply_inventory_on_transition(db: Session, order: Order, current: OrderStatu
 
 
 def recompute_totals(order: Order) -> None:
-    """依項目重算 subtotal，並更新 total = subtotal + shipping_fee。"""
+    """依項目重算 subtotal，total = max(0, subtotal - 折扣) + 運費。"""
     order.subtotal = sum((i.price or 0) * i.quantity for i in order.items)
-    order.total_amount = (order.subtotal or 0) + (order.shipping_fee or 0)
+    discounted = max(0.0, (order.subtotal or 0) - (order.discount or 0))
+    order.total_amount = discounted + (order.shipping_fee or 0)

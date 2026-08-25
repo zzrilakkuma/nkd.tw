@@ -40,6 +40,8 @@ export interface ApiOrder {
   status: OrderStatus;
   delivery_method?: string;
   subtotal: number;
+  discount: number;
+  invoice?: { tax_id: string; company_name: string } | null;
   shipping_fee: number;
   total_amount: number;
   locked: boolean;
@@ -127,10 +129,27 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const verifyOrder = async (orderId: string, shippingFee: number) => {
+  const updateOrderItems = async (
+    orderId: string,
+    items: Array<{ sku_id: string; quantity: number }>,
+    discount?: number,
+  ) => {
     setUpdatingId(orderId);
     try {
-      const updated = await ordersAPI.verify(orderId, shippingFee);
+      const updated = await ordersAPI.updateItems(orderId, items, discount);
+      setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, ...updated } : o)));
+      setSelectedOrder(prev => (prev?.id === orderId ? { ...prev, ...updated } : prev));
+    } catch (err: any) {
+      alert(err.response?.data?.detail || '品項調整失敗，請再試一次');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const verifyOrder = async (orderId: string, shippingFee: number, discount = 0) => {
+    setUpdatingId(orderId);
+    try {
+      const updated = await ordersAPI.verify(orderId, shippingFee, discount);
       setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, ...updated } : o)));
       setSelectedOrder(prev => (prev?.id === orderId ? { ...prev, ...updated } : prev));
     } catch (err: any) {
@@ -493,6 +512,7 @@ const AdminDashboard: React.FC = () => {
         onClose={() => setSelectedOrder(null)}
         onStatusChange={updateOrderStatus}
         onVerify={verifyOrder}
+        onUpdateItems={updateOrderItems}
         updatingId={updatingId}
       />
     </div>

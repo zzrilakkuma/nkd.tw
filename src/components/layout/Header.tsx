@@ -54,7 +54,7 @@ const Header: React.FC = () => {
       <div className="container">
         <div className="header-left">
           <Link to="/" className="logo">
-            <h1>NKD.tw</h1>
+            <img src="/nkd-logo.png" alt="NKD" className="logo-img" />
           </Link>
 
           <nav className="nav-left desktop-nav">

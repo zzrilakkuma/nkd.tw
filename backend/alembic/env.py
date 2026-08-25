@@ -7,7 +7,7 @@ from app.core.config import settings
 from app.core.database import Base
 
 # 匯入所有 model，使 Base.metadata 完整（供 autogenerate 使用）
-from app.models import user, brand, category, product, pickup_location, order, audit_log  # noqa: F401
+from app.models import user, brand, category, product, pickup_location, order, audit_log, image  # noqa: F401
 
 config = context.config
 

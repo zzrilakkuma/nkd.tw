@@ -237,7 +237,7 @@ const Products: React.FC = () => {
                   </span>
                 </div>
 
-                {activeSkus.length > 1 && (
+                {activeSkus.length > 0 && (
                   <div className="sku-options">
                     {activeSkus.map(s => (
                       <button

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Product, Brand, Category, SKU } from '../../types';
-import { productsAPI, brandsAPI, categoriesAPI } from '../../services/api';
+import { productsAPI, brandsAPI, categoriesAPI, imagesAPI } from '../../services/api';
 import { formatPrice } from '../../utils';
 
 interface ProductForm {
@@ -52,6 +52,21 @@ const AdminProducts: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageUpload = async (file: File | undefined) => {
+    if (!file) return;
+    setUploading(true);
+    setFormError(null);
+    try {
+      const res = await imagesAPI.upload(file);
+      setForm(prev => ({ ...prev, main_image: res.absoluteUrl }));
+    } catch (err: any) {
+      setFormError(err.response?.data?.detail || '圖片上傳失敗，請確認格式與大小（3MB 內）');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   // SKU 管理 Modal
   const [skuProduct, setSkuProduct] = useState<Product | null>(null);
@@ -435,8 +450,26 @@ const AdminProducts: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label>主要圖片 URL</label>
-                <input value={form.main_image} onChange={e => setForm({ ...form, main_image: e.target.value })} placeholder="/images/... 或 https://..." />
+                <label>主要圖片</label>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <label className="btn-edit" style={{ cursor: 'pointer', margin: 0 }}>
+                    {uploading ? '上傳中...' : '📁 上傳圖片'}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      style={{ display: 'none' }}
+                      disabled={uploading}
+                      onChange={e => { handleImageUpload(e.target.files?.[0]); e.target.value = ''; }}
+                    />
+                  </label>
+                  <span style={{ fontSize: 12, color: '#9a9aa5' }}>JPG / PNG / WebP，3MB 內；或直接貼圖片網址：</span>
+                </div>
+                <input
+                  style={{ marginTop: 8 }}
+                  value={form.main_image}
+                  onChange={e => setForm({ ...form, main_image: e.target.value })}
+                  placeholder="/images/... 或 https://..."
+                />
                 {form.main_image && (
                   <img src={form.main_image} alt="預覽" className="image-preview" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 )}
