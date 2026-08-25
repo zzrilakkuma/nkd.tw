@@ -1039,12 +1039,14 @@
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: flex;
-  align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 32px 20px;
+  overflow-y: auto;
 }
 .mo-modal {
+  margin: auto;
+  height: fit-content;
   width: 100%;
   max-width: 420px;
   background: #1a1a22;
