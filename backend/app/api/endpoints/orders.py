@@ -89,7 +89,7 @@ def _get_order_or_404(db: Session, order_id: str) -> Order:
     return order
 
 
-@router.post("/", response_model=OrderResponse)
+@router.post("", response_model=OrderResponse)
 def create_order(
     order_data: OrderCreate,
     db: Session = Depends(get_db),
@@ -155,7 +155,7 @@ def create_order(
     return order
 
 
-@router.get("/", response_model=List[OrderResponse])
+@router.get("", response_model=List[OrderResponse])
 def get_user_orders(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
