@@ -198,6 +198,13 @@ const AdminDashboard: React.FC = () => {
   });
 
   const pendingCount = orders.filter(o => ACTIONABLE.includes(o.status)).length;
+
+  // 待審核超過 3 天視為滯留，提醒管理員處理
+  const STALE_REVIEW_DAYS = 3;
+  const isStaleReview = (o: ApiOrder) =>
+    o.status === 'pending_review' &&
+    Date.now() - new Date(o.created_at).getTime() > STALE_REVIEW_DAYS * 24 * 60 * 60 * 1000;
+  const staleReviewCount = orders.filter(isStaleReview).length;
   const preparingCount = orders.filter(o => o.status === 'preparing').length;
   const completedRevenue = orders
     .filter(o => o.status === 'completed')
@@ -257,6 +264,16 @@ const AdminDashboard: React.FC = () => {
         {activeTab === 'audit' && <AdminAuditLogs />}
 
         {activeTab === 'orders' && <>
+        {staleReviewCount > 0 && (
+          <div
+            className="stale-review-banner"
+            role="alert"
+            onClick={() => setStatusFilter('pending_review')}
+          >
+            <span className="stale-review-dot" aria-hidden="true" />
+            {staleReviewCount} 筆訂單待核對已超過 {STALE_REVIEW_DAYS} 天，庫存持續被保留中 — 點擊查看
+          </div>
+        )}
         <div className="admin-stats">
           <div className="stat-card clickable" onClick={() => setStatusFilter('all')}>
             <h3>總訂單數</h3>
@@ -351,13 +368,18 @@ const AdminDashboard: React.FC = () => {
                     {pagedOrders.map(order => (
                       <tr
                         key={order.id}
-                        className={`clickable-row ${ACTIONABLE.includes(order.status) ? 'needs-action' : ''}`}
+                        className={`clickable-row ${ACTIONABLE.includes(order.status) ? 'needs-action' : ''} ${isStaleReview(order) ? 'stale-review' : ''}`}
                         onClick={() => setSelectedOrder(order)}
                       >
                         <td>
                           <span className="order-id" title={order.id}>
                             {order.id.length > 10 ? `${order.id.slice(0, 8)}…` : order.id}
                           </span>
+                          {isStaleReview(order) && (
+                            <span className="stale-badge">
+                              逾 {Math.floor((Date.now() - new Date(order.created_at).getTime()) / 86400000)} 天未核對
+                            </span>
+                          )}
                         </td>
                         <td>{formatDate(order.created_at)}</td>
                         <td>

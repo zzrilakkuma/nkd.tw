@@ -1745,3 +1745,55 @@ tbody tr:hover {
 @media (max-width: 560px) {
   .taxonomy-grid { grid-template-columns: 1fr; }
 }
+
+/* 待審核逾期提醒（超過 3 天未核對） */
+.stale-review-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(246, 173, 85, 0.08);
+  border: 1px solid rgba(246, 173, 85, 0.35);
+  border-radius: 12px;
+  padding: 13px 18px;
+  margin-bottom: 18px;
+  color: #f6ad55;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.stale-review-banner:hover {
+  background: rgba(246, 173, 85, 0.14);
+  border-color: rgba(246, 173, 85, 0.55);
+}
+
+.stale-review-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f6ad55;
+  flex-shrink: 0;
+  animation: stalePulse 2.4s ease-in-out infinite;
+}
+
+@keyframes stalePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.clickable-row.stale-review {
+  box-shadow: inset 3px 0 0 #f6ad55;
+}
+
+.stale-badge {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: #f6ad55;
+  border: 1px solid rgba(246, 173, 85, 0.4);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
