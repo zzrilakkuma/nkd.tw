@@ -22,10 +22,10 @@
 .empty-orders {
   text-align: center;
   padding: 80px 20px;
-  background: #0d0f17;
+  background: #0e0d0b;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(203, 177, 126, 0.2);
 }
 
 .empty-icon {
@@ -54,12 +54,12 @@
 }
 
 .order-card {
-  background: #0d0f17;
+  background: #0e0d0b;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-  border: 2px solid rgba(102, 126, 234, 0.3);
+  border: 2px solid rgba(203, 177, 126, 0.3);
   position: relative;
 }
 
@@ -71,7 +71,7 @@
   transform: translateX(-50%);
   width: 80%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(203, 177, 126, 0.3), transparent);
 }
 
 .order-card:last-child::after {
@@ -80,8 +80,8 @@
 
 .order-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
-  border-color: rgba(102, 126, 234, 0.6);
+  box-shadow: 0 12px 30px rgba(203, 177, 126, 0.22);
+  border-color: rgba(203, 177, 126, 0.6);
 }
 
 /* 訂單標題區域 */
@@ -90,8 +90,8 @@
   grid-template-columns: 1fr auto;
   gap: 20px;
   padding: 24px 30px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+  background: linear-gradient(135deg, #161412 0%, #221d15 100%);
+  border-bottom: 1px solid rgba(203, 177, 126, 0.2);
 }
 
 .order-info {
@@ -139,15 +139,15 @@
   align-items: center;
   font-size: 28px;
   font-weight: 700;
-  color: #667eea;
+  color: #cbb17e;
   white-space: nowrap;
 }
 
 /* 商品明細區域 */
 .order-items {
   padding: 30px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+  background: linear-gradient(135deg, #161412 0%, #221d15 100%);
+  border-bottom: 1px solid rgba(203, 177, 126, 0.2);
 }
 
 .order-items h4 {
@@ -163,7 +163,7 @@
   gap: 15px;
   align-items: center;
   padding: 15px 0;
-  border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+  border-bottom: 1px solid rgba(203, 177, 126, 0.1);
 }
 
 .order-item:last-child {
@@ -175,11 +175,11 @@
   height: 60px;
   border-radius: 6px;
   overflow: hidden;
-  background: #0d0f17;
+  background: #0e0d0b;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(203, 177, 126, 0.2);
 }
 
 .order-item .item-image img {
@@ -216,8 +216,8 @@
 /* 配送資訊區域 */
 .order-shipping {
   padding: 30px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+  background: linear-gradient(135deg, #161412 0%, #221d15 100%);
+  border-bottom: 1px solid rgba(203, 177, 126, 0.2);
 }
 
 .order-shipping h4 {
@@ -231,7 +231,7 @@
   background: #ffffff;
   padding: 20px;
   border-radius: 8px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #cbb17e;
 }
 
 .shipping-details p {
@@ -255,7 +255,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: linear-gradient(135deg, #161412 0%, #221d15 100%);
 }
 
 .payment-notice,
@@ -355,7 +355,7 @@
 
 .bank-row-compact .account-number {
   font-family: monospace;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 1px;
 }
 
@@ -434,8 +434,8 @@
 
 .btn-secondary {
   background: transparent;
-  color: #667eea;
-  border: 2px solid #667eea;
+  color: #cbb17e;
+  border: 2px solid #cbb17e;
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -448,7 +448,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-gold);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -469,13 +469,13 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-gold);
+  color: var(--color-on-gold);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(203, 177, 126, 0.22);
 }
 
 .btn-primary:disabled {
@@ -592,7 +592,7 @@
   gap: 6px;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(201, 169, 97, 0.16);
   background: rgba(255, 255, 255, 0.04);
   color: #cfcfd6;
   font-size: 14px;
@@ -600,11 +600,11 @@
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.mo-filter-chip:hover { border-color: rgba(139, 92, 246, 0.6); }
+.mo-filter-chip:hover { border-color: rgba(201, 169, 97, 0.6); }
 .mo-filter-chip.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: transparent;
-  color: #fff;
+  background: rgba(201, 169, 97, 0.14);
+  border-color: var(--color-accent-primary);
+  color: var(--color-accent-light);
 }
 .mo-chip-count {
   min-width: 18px;
@@ -621,7 +621,7 @@
 /* 卡片 */
 .mo-card {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(201, 169, 97, 0.12);
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 16px;
@@ -645,7 +645,7 @@
   font-family: monospace;
   font-size: 14px;
   color: #e5e5ea;
-  font-weight: 700;
+  font-weight: 500;
 }
 .mo-date { font-size: 13px; color: #9a9aa5; }
 .mo-amount { font-size: 20px; font-weight: 800; color: #fff; }
@@ -691,17 +691,17 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.18);
 }
-.mo-step.done .mo-step-dot { background: #8b5cf6; }
+.mo-step.done .mo-step-dot { background: #c9a961; }
 .mo-step.done .mo-step-track::before,
-.mo-step.done .mo-step-track::after { background: rgba(139, 92, 246, 0.55); }
+.mo-step.done .mo-step-track::after { background: rgba(201, 169, 97, 0.55); }
 .mo-step.current .mo-step-dot {
   width: 14px;
   height: 14px;
-  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 0 0 4px rgba(201, 169, 97, 0.138);
 }
 .mo-step-label { font-size: 11px; color: #8e8e99; }
 .mo-step.done .mo-step-label { color: #c9b8f5; }
-.mo-step.current .mo-step-label { color: #fff; font-weight: 700; }
+.mo-step.current .mo-step-label { color: #fff; font-weight: 500; }
 
 /* 狀態提示 */
 .mo-notice {
@@ -714,7 +714,7 @@
   font-size: 13px;
   line-height: 1.6;
 }
-.mo-notice-info { background: rgba(99, 102, 241, 0.1); color: #c7d2fe; }
+.mo-notice-info { background: rgba(160, 138, 82, 0.1); color: #c7d2fe; }
 .mo-notice-warn { background: rgba(246, 173, 85, 0.12); color: #fbd38d; }
 .mo-notice-ok { background: rgba(72, 187, 120, 0.1); color: #9ae6b4; }
 .mo-notice strong { color: inherit; }
@@ -771,7 +771,7 @@
 /* 展開明細 */
 .mo-detail {
   margin-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(201, 169, 97, 0.1);
   padding-top: 14px;
 }
 .mo-detail-item {
@@ -807,7 +807,7 @@
   margin: 0 0 8px;
   font-size: 12px;
   color: #9a9aa5;
-  font-weight: 700;
+  font-weight: 500;
 }
 .mo-detail-block p {
   margin: 4px 0;
@@ -820,7 +820,7 @@
   justify-content: space-between;
 }
 .mo-amount-final {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(201, 169, 97, 0.12);
   padding-top: 6px;
   margin-top: 6px !important;
   font-weight: 700;
@@ -857,18 +857,20 @@
 .mo-btn-primary {
   width: 100%;
   padding: 12px;
-  border: none;
+  border: var(--border-gold-cta);
   border-radius: 10px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
+  background: var(--gradient-gold-cta);
+  color: var(--color-on-gold-cta);
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: var(--shadow-gold-bevel);
+  letter-spacing: 0.24em;
 }
 .mo-btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(118, 75, 162, 0.4);
+  background: var(--gradient-gold-cta-hover);
+  box-shadow: var(--shadow-gold-bevel-hover);
 }
 
 /* 次要動作 */
@@ -914,7 +916,7 @@
   width: 100%;
   max-width: 420px;
   background: #1a1a22;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(201, 169, 97, 0.14);
   border-radius: 18px;
   padding: 22px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
@@ -966,7 +968,7 @@
 }
 .mo-modal-summary > div {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(201, 169, 97, 0.1);
   border-radius: 12px;
   padding: 10px 14px;
   display: flex;
@@ -994,15 +996,15 @@
   color: #fff;
   font-size: 28px;
   font-family: monospace;
-  font-weight: 700;
+  font-weight: 500;
   text-align: center;
   letter-spacing: 14px;
   text-indent: 14px; /* 平衡 letter-spacing 造成的偏移 */
 }
 .mo-digits-input:focus {
   outline: none;
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+  border-color: #c9a961;
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.11);
 }
 .mo-digits-input.error { border-color: #f87171; }
 .mo-digits-input::placeholder { color: rgba(255, 255, 255, 0.18); }
@@ -1021,7 +1023,7 @@
   transition: background 0.15s ease;
 }
 .mo-digits-progress span.filled {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-gold);
 }
 .mo-digits-error {
   margin-top: 8px;
@@ -1046,7 +1048,7 @@
   flex: 1;
   padding: 12px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(201, 169, 97, 0.18);
   background: transparent;
   color: #cfcfd6;
   font-size: 14px;

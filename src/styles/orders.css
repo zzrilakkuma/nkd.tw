@@ -5,7 +5,7 @@
 
 .saved-addresses-title {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   color: var(--color-accent-primary);
@@ -26,7 +26,7 @@
   text-align: left;
   padding: 12px 16px;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(201, 169, 97, 0.1);
   border-radius: 10px;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
@@ -34,12 +34,12 @@
 }
 
 .saved-address-card:hover {
-  background: rgba(139, 92, 246, 0.08);
-  border-color: rgba(139, 92, 246, 0.3);
+  background: rgba(201, 169, 97, 0.08);
+  border-color: rgba(201, 169, 97, 0.3);
 }
 
 .saved-address-card.selected {
-  background: rgba(139, 92, 246, 0.12);
+  background: rgba(201, 169, 97, 0.12);
   border-color: var(--color-accent-primary);
 }
 
@@ -47,8 +47,8 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--color-accent-primary);
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: rgba(201, 169, 97, 0.15);
+  border: 1px solid rgba(201, 169, 97, 0.3);
   border-radius: 5px;
   padding: 1px 7px;
   flex-shrink: 0;
@@ -73,7 +73,7 @@
 .saved-addr-check {
   font-size: 13px;
   color: var(--color-accent-primary);
-  font-weight: 700;
+  font-weight: 500;
   flex-shrink: 0;
   margin-left: auto;
 }
@@ -81,7 +81,7 @@
 /* 結帳頁面樣式 */
 .checkout-page {
   padding: 40px 0;
-  background: #1a1a2e;
+  background: #161412;
   min-height: calc(100vh - 80px);
 }
 
@@ -99,17 +99,17 @@
 }
 
 .checkout-form {
-  background: #0d0f17;
+  background: #0e0d0b;
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-  border: 2px solid rgba(102, 126, 234, 0.3);
+  border: 2px solid rgba(203, 177, 126, 0.3);
 }
 
 .checkout-form h2 {
   color: #ffffff;
   margin-bottom: 30px;
-  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+  border-bottom: 2px solid rgba(203, 177, 126, 0.3);
   padding-bottom: 10px;
 }
 
@@ -134,11 +134,11 @@
 
 /* Checkout 頁面訂單摘要 */
 .checkout-order-summary {
-  background: #0d0f17;
+  background: #0e0d0b;
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-  border: 2px solid rgba(102, 126, 234, 0.3);
+  border: 2px solid rgba(203, 177, 126, 0.3);
   height: fit-content;
   position: sticky;
   top: 20px;
@@ -147,7 +147,7 @@
 .checkout-order-summary h2 {
   color: #ffffff;
   margin: 0 0 20px 0;
-  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+  border-bottom: 2px solid rgba(203, 177, 126, 0.3);
   padding-bottom: 10px;
   font-size: 20px;
 }
@@ -163,7 +163,7 @@
   column-gap: 20px;
   row-gap: 4px;
   padding: 14px 0;
-  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+  border-bottom: 1px solid rgba(203, 177, 126, 0.2);
 }
 
 .checkout-order-item:last-child {
@@ -192,14 +192,14 @@
 .checkout-item-price {
   grid-column: 2;
   grid-row: 1;
-  color: #667eea;
+  color: #cbb17e;
   font-weight: 600;
   white-space: nowrap;
   align-self: start;
 }
 
 .checkout-order-total {
-  border-top: 2px solid rgba(102, 126, 234, 0.3);
+  border-top: 2px solid rgba(203, 177, 126, 0.3);
   padding-top: 20px;
 }
 
@@ -215,7 +215,7 @@
   font-weight: 700;
   font-size: 20px;
   color: #ffffff;
-  border-top: 1px solid rgba(102, 126, 234, 0.2);
+  border-top: 1px solid rgba(203, 177, 126, 0.2);
   margin-top: 10px;
   padding-top: 15px;
 }
@@ -249,11 +249,11 @@
 }
 
 .order-details {
-  background: #1a1a2e;
+  background: #161412;
   padding: 40px;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-  border: 2px solid rgba(102, 126, 234, 0.3);
+  border: 2px solid rgba(203, 177, 126, 0.3);
   text-align: left;
   margin-bottom: 40px;
 }
@@ -272,7 +272,7 @@
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+  border-bottom: 1px solid rgba(203, 177, 126, 0.2);
 }
 
 .info-row .label {
@@ -294,11 +294,11 @@
 }
 
 .shipping-info {
-  background: #0d0f17;
+  background: #0e0d0b;
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 30px;
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(203, 177, 126, 0.2);
 }
 
 .shipping-info p {
@@ -351,14 +351,14 @@
 .confirm-item-price {
   grid-column: 2;
   grid-row: 1;
-  color: #667eea;
+  color: #cbb17e;
   font-weight: 600;
   white-space: nowrap;
   align-self: start;
 }
 
 .confirm-order-total {
-  border-top: 2px solid rgba(102, 126, 234, 0.3);
+  border-top: 2px solid rgba(203, 177, 126, 0.3);
   padding-top: 20px;
   margin-top: 20px;
 }
@@ -376,7 +376,7 @@
 .confirm-total-row .amount {
   font-size: 28px;
   font-weight: 800;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-gold);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -401,18 +401,21 @@
 }
 
 .payment-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--gradient-gold-cta);
+  color: var(--color-on-gold-cta);
   padding: 14px 28px;
   text-decoration: none;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 500;
   transition: all 0.3s ease;
+  border: var(--border-gold-cta);
+  box-shadow: var(--shadow-gold-bevel);
+  letter-spacing: 0.24em;
 }
 
 .payment-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: var(--gradient-gold-cta-hover);
+  box-shadow: var(--shadow-gold-bevel-hover);
 }
 
 .my-orders-btn {
@@ -448,7 +451,7 @@
 /* 付款頁面樣式 */
 .payment-page {
   padding: 40px 0;
-  background: #1a1a2e;
+  background: #161412;
   min-height: calc(100vh - 80px);
 }
 
@@ -466,17 +469,17 @@
 }
 
 .payment-page .order-summary {
-  background: #0d0f17;
+  background: #0e0d0b;
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-  border: 2px solid rgba(102, 126, 234, 0.3);
+  border: 2px solid rgba(203, 177, 126, 0.3);
 }
 
 .payment-page .order-summary h2 {
   color: #ffffff;
   margin: 0 0 30px 0;
-  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+  border-bottom: 2px solid rgba(203, 177, 126, 0.3);
   padding-bottom: 10px;
 }
 
@@ -488,7 +491,7 @@
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+  border-bottom: 1px solid rgba(203, 177, 126, 0.2);
   color: #a0a0a0;
 }
 
@@ -497,16 +500,16 @@
 }
 
 .order-basic-info .info-row .amount {
-  color: #667eea;
+  color: #cbb17e;
   font-weight: 600;
 }
 
 .order-items-summary {
-  background: #0d0f17;
+  background: #0e0d0b;
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 20px;
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(203, 177, 126, 0.2);
 }
 
 .order-items-summary h3 {
@@ -523,27 +526,27 @@
 }
 
 .payment-info {
-  background: #0d0f17;
+  background: #0e0d0b;
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-  border: 2px solid rgba(102, 126, 234, 0.3);
+  border: 2px solid rgba(203, 177, 126, 0.3);
 }
 
 .payment-info h2 {
   color: #ffffff;
   margin: 0 0 30px 0;
-  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+  border-bottom: 2px solid rgba(203, 177, 126, 0.3);
   padding-bottom: 10px;
 }
 
 .bank-info-card {
-  background: #0d0f17;
+  background: #0e0d0b;
   padding: 25px;
   border-radius: 8px;
   margin-bottom: 30px;
-  border: 1px solid rgba(102, 126, 234, 0.3);
-  border-left: 4px solid #667eea;
+  border: 1px solid rgba(203, 177, 126, 0.3);
+  border-left: 4px solid #cbb17e;
 }
 
 .bank-row {
@@ -563,8 +566,8 @@
 }
 
 .bank-row.highlight {
-  background: #667eea;
-  color: white;
+  background: #cbb17e;
+  color: var(--color-on-gold);
   margin: 15px -25px 0;
   padding: 12px 25px;
   border-radius: 0 0 8px 8px;
@@ -577,7 +580,7 @@
 
 .account-number {
   font-family: monospace;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 1px;
 }
 
@@ -603,12 +606,12 @@
 }
 
 .payment-instructions li::marker {
-  color: #667eea;
+  color: #cbb17e;
 }
 
 .payment-instructions li strong {
   color: #ffffff;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .payment-notice {
@@ -732,12 +735,12 @@
   transition: all 0.15s ease;
 }
 .delivery-method-tab:hover {
-  border-color: rgba(139, 92, 246, 0.5);
+  border-color: rgba(201, 169, 97, 0.5);
 }
 .delivery-method-tab.active {
-  border-color: #8b5cf6;
-  background: rgba(139, 92, 246, 0.15);
-  box-shadow: 0 0 0 1px #8b5cf6 inset;
+  border-color: #c9a961;
+  background: rgba(201, 169, 97, 0.15);
+  box-shadow: 0 0 0 1px #c9a961 inset;
 }
 .delivery-fee-hint {
   font-size: 12px;

@@ -5,7 +5,7 @@
 
 .profile-card {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(201, 169, 97, 0.11);
   border-radius: 20px;
   padding: 40px;
   max-width: 680px;
@@ -25,20 +25,20 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+  background: linear-gradient(135deg, #c9a961, #cbb17e);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  font-weight: 700;
-  color: #fff;
+  font-weight: 500;
+  color: var(--color-on-gold);
   flex-shrink: 0;
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 20px rgba(201, 169, 97, 0.22);
 }
 
 .profile-username {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--color-text-primary);
   margin: 0 0 4px;
 }
@@ -51,7 +51,7 @@
 
 .profile-divider {
   border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid rgba(201, 169, 97, 0.09);
   margin: 0 0 28px;
 }
 
@@ -89,14 +89,14 @@
   align-items: center;
   gap: 16px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(201, 169, 97, 0.1);
   border-radius: 12px;
   padding: 16px 20px;
   transition: border-color 0.2s;
 }
 
 .address-card:hover {
-  border-color: rgba(139, 92, 246, 0.3);
+  border-color: rgba(201, 169, 97, 0.3);
 }
 
 .address-card-body {
@@ -108,8 +108,8 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--color-accent-primary);
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: rgba(201, 169, 97, 0.15);
+  border: 1px solid rgba(201, 169, 97, 0.3);
   border-radius: 6px;
   padding: 2px 8px;
   margin-bottom: 6px;
@@ -137,7 +137,7 @@
 .btn-addr-edit {
   padding: 6px 14px;
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(201, 169, 97, 0.14);
   border-radius: 8px;
   color: var(--color-text-secondary);
   font-size: 13px;
@@ -184,8 +184,8 @@
 /* Add buttons */
 .btn-add-address {
   padding: 8px 16px;
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.35);
+  background: rgba(201, 169, 97, 0.15);
+  border: 1px solid rgba(201, 169, 97, 0.35);
   border-radius: 10px;
   color: var(--color-accent-primary);
   font-size: 13px;
@@ -196,13 +196,13 @@
 }
 
 .btn-add-address:hover {
-  background: rgba(139, 92, 246, 0.25);
+  background: rgba(201, 169, 97, 0.25);
 }
 
 .btn-add-address-lg {
   padding: 11px 24px;
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.35);
+  background: rgba(201, 169, 97, 0.15);
+  border: 1px solid rgba(201, 169, 97, 0.35);
   border-radius: 10px;
   color: var(--color-accent-primary);
   font-size: 14px;
@@ -212,7 +212,7 @@
 }
 
 .btn-add-address-lg:hover {
-  background: rgba(139, 92, 246, 0.25);
+  background: rgba(201, 169, 97, 0.25);
 }
 
 /* Modal overlay */
@@ -233,7 +233,7 @@
   margin: auto;
   height: fit-content;
   background: #141414;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(201, 169, 97, 0.12);
   border-radius: 20px;
   padding: 32px;
   width: 100%;
@@ -256,7 +256,7 @@
 
 .addr-modal-header h3 {
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--color-text-primary);
   margin: 0;
 }
@@ -308,7 +308,7 @@
   width: 100%;
   padding: 10px 14px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(201, 169, 97, 0.12);
   border-radius: 10px;
   font-size: 14px;
   color: var(--color-text-secondary);
@@ -324,7 +324,7 @@
 .profile-form input:focus {
   outline: none;
   border-color: var(--color-accent-primary);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 0 0 3px rgba(201, 169, 97, 0.083);
 }
 
 .profile-form input.error {
@@ -349,7 +349,7 @@
 .btn-cancel-addr {
   padding: 11px 20px;
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(201, 169, 97, 0.12);
   border-radius: 10px;
   color: var(--color-text-secondary);
   font-size: 14px;
@@ -365,14 +365,14 @@
 .btn-save-profile {
   padding: 11px 28px;
   background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
-  color: #fff;
+  color: var(--color-on-gold);
   border: none;
   border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s, transform 0.2s;
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 0 20px rgba(201, 169, 97, 0.165);
 }
 
 .btn-save-profile:hover:not(:disabled) {

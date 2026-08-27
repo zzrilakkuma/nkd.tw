@@ -73,7 +73,7 @@ class ErrorBoundary extends Component<Props, State> {
               onClick={() => window.location.href = '/'}
               style={{
                 padding: '12px 24px',
-                background: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
+                background: 'linear-gradient(135deg, #c9a961, #a08a52)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',

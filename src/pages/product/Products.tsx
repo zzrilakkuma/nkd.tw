@@ -120,31 +120,11 @@ const Products: React.FC = () => {
   };
 
   const bannerImages = [
-    '/banner/8b1b9fd1-dd43-40bf-a045-410bb78248ea.png',
+    '/banner/nkd-keyvisual.png',
   ];
 
   return (
     <div className="products-page">
-      {/* Scrolling Banner */}
-      <div className="banner-wrapper">
-        <div className="scrolling-banner">
-          <div className="banner-content">
-            <span>🚀 高效率出貨作業</span>
-            <span>🤝 合作方案彈性規劃</span>
-            <span>🏪 店家合作洽詢中</span>
-            <span>✅ 合法報關・合規經營</span>
-            <span>🏷️ 品牌台灣正式代理</span>
-            <span>🔓 多元合作模式開放</span>
-            <span>🚀 高效率出貨作業</span>
-            <span>🤝 合作方案彈性規劃</span>
-            <span>🏪 店家合作洽詢中</span>
-            <span>✅ 合法報關・合規經營</span>
-            <span>🏷️ 品牌台灣正式代理</span>
-            <span>🔓 多元合作模式開放</span>
-          </div>
-        </div>
-      </div>
-
       {/* Carousel Banner */}
       <div className="carousel-wrapper">
         <Slider {...carouselSettings}>
@@ -198,7 +178,7 @@ const Products: React.FC = () => {
               onClick={() => window.location.reload()}
               style={{
                 padding: '12px 24px',
-                background: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
+                background: 'linear-gradient(135deg, #c9a961, #a08a52)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
@@ -225,17 +205,16 @@ const Products: React.FC = () => {
                 <img src={product.image} alt={product.name} onError={(e) => {
                   (e.target as HTMLImageElement).src = '/images/placeholder.svg';
                 }} />
+                <span className="product-image-sweep" aria-hidden="true" />
               </div>
 
               <div className="product-info">
+                <p className="product-brand">
+                  {product.brand?.name || product.category?.name}
+                </p>
                 <h3>{product.name}</h3>
                 <p className="product-description">{product.description}</p>
-                <div className="product-details">
-                  <span className="product-category">{product.category?.name}</span>
-                  <span className="product-availability">
-                    {available > 0 ? '現貨供應' : '暫時缺貨'}
-                  </span>
-                </div>
+                <div className="product-rule" aria-hidden="true" />
 
                 {activeSkus.length > 0 && (
                   <div className="sku-options">
@@ -254,8 +233,13 @@ const Products: React.FC = () => {
                   </div>
                 )}
 
-                <div className="product-price">
-                  {sku ? formatPrice(sku.price) : '—'}
+                <div className="product-foot">
+                  <span className="product-price">
+                    {sku ? formatPrice(sku.price) : '—'}
+                  </span>
+                  <span className={`product-availability ${available > 0 ? '' : 'out'}`}>
+                    {available > 0 ? `庫存 ${available}` : '暫時缺貨'}
+                  </span>
                 </div>
 
                 <button
