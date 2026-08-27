@@ -33,8 +33,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token 過期，清除登入資訊
+    const isLoginRequest = error.config?.url?.includes('/auth/login');
+    if (error.response?.status === 401 && !isLoginRequest) {
+      // Token 過期，清除登入資訊（登入本身的 401 是帳密錯誤，交給表單顯示訊息）
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
