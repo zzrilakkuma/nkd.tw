@@ -1,8 +1,7 @@
-<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
-  <rect width="400" height="400" fill="#f8f9fa"/>
-  <rect x="50" y="50" width="300" height="300" fill="#e9ecef" stroke="#dee2e6" stroke-width="2"/>
-  <text x="200" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#6c757d">水煙商品</text>
-  <text x="200" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#adb5bd">圖片載入中...</text>
-  <circle cx="200" cy="250" r="30" fill="none" stroke="#dee2e6" stroke-width="3"/>
-  <path d="M185 250 L195 260 L215 240" stroke="#6c757d" stroke-width="3" fill="none"/>
+<svg width="600" height="400" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="400" fill="#0a0908"/>
+  <rect x="14" y="14" width="572" height="372" fill="none" stroke="#c9a961" stroke-opacity="0.22" stroke-width="1"/>
+  <text x="300" y="196" text-anchor="middle" font-family="Didot, 'Playfair Display', Georgia, serif" font-size="64" letter-spacing="14" fill="#a08a52">NKD</text>
+  <line x1="264" y1="228" x2="336" y2="228" stroke="#c9a961" stroke-opacity="0.35" stroke-width="1"/>
+  <text x="300" y="266" text-anchor="middle" font-family="'PingFang TC', 'Noto Sans TC', sans-serif" font-size="15" letter-spacing="8" fill="#6f6a60">暫無圖片</text>
 </svg>
