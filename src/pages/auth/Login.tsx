@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { useNavigate } from 'react-router-dom';
 import { LoginForm } from '../../types';
 import { authAPI } from '../../services/api';
 
@@ -12,7 +11,6 @@ const schema = yup.object({
 });
 
 const Login: React.FC = () => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const {
     register,
@@ -40,10 +38,11 @@ const Login: React.FC = () => {
       localStorage.setItem('user', JSON.stringify(userData));
 
       // 首次登入（臨時密碼）強制修改密碼
+      // 整頁重新載入，確保 Header 等依賴登入狀態的畫面一併更新
       if (response.user.must_change_password) {
-        navigate('/change-password');
+        window.location.href = '/change-password';
       } else {
-        navigate('/');
+        window.location.href = '/';
       }
     } catch (error: any) {
       console.error('Login error:', error);
