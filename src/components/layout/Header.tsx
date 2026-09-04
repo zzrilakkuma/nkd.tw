@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
-  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [cartBounce, setCartBounce] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
-    navigate('/');
-    setMobileMenuOpen(false);
+    // 整頁重新載入，確保所有依賴登入狀態的畫面（Header、首頁閘門等）一併重置
+    window.location.href = '/';
   };
 
   const updateCartCount = () => {
