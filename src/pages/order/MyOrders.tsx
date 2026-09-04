@@ -66,6 +66,7 @@ const MyOrders: React.FC = () => {
               shippingFee: apiOrder.shipping_fee,
               totalAmount: apiOrder.total_amount,
               status: apiOrder.status,
+              paymentType: apiOrder.payment_type,
               deliveryMethod: apiOrder.delivery_method,
               paymentDeadline: apiOrder.payment_deadline,
               createdAt: apiOrder.created_at,
@@ -107,6 +108,9 @@ const MyOrders: React.FC = () => {
   // 進度條（正常流程）
   const PROGRESS_STEPS = ['pending_review', 'pending_payment', 'pending_confirm', 'preparing', 'completed'];
   const PROGRESS_LABELS = ['核對', '付款', '入帳確認', '出貨', '完成'];
+  // 月結流程：核准即視同已付款，不經付款/入帳
+  const MONTHLY_PROGRESS_STEPS = ['pending_review', 'preparing', 'completed'];
+  const MONTHLY_PROGRESS_LABELS = ['核對', '出貨', '完成'];
   const ACTIVE_SET = ['pending_review', 'pending_payment', 'pending_confirm', 'preparing'];
 
   // 篩選
@@ -144,7 +148,9 @@ const MyOrders: React.FC = () => {
       case 'pending_confirm':
         return { icon: '⏳', text: '付款資訊已提交，等待店家確認入帳', tone: 'info' };
       case 'preparing':
-        return { icon: '📦', text: '已確認入帳，商品準備出貨中', tone: 'ok' };
+        return order.paymentType === 'monthly'
+          ? { icon: '📦', text: '月結訂單已核准，商品準備出貨中', tone: 'ok' }
+          : { icon: '📦', text: '已確認入帳，商品準備出貨中', tone: 'ok' };
       default:
         return null;
     }
@@ -239,7 +245,10 @@ const MyOrders: React.FC = () => {
           <div className="orders-list">
             {visibleOrders.map(order => {
               const closed = order.status === 'cancelled' || order.status === 'expired';
-              const stepIdx = PROGRESS_STEPS.indexOf(order.status);
+              const isMonthly = order.paymentType === 'monthly';
+              const progressSteps = isMonthly ? MONTHLY_PROGRESS_STEPS : PROGRESS_STEPS;
+              const progressLabels = isMonthly ? MONTHLY_PROGRESS_LABELS : PROGRESS_LABELS;
+              const stepIdx = progressSteps.indexOf(order.status);
               const expanded = expandedId === order.id;
               const itemCount = order.items.reduce((s, i) => s + i.quantity, 0);
               const notice = noticeFor(order);
@@ -249,6 +258,7 @@ const MyOrders: React.FC = () => {
                   <div className="mo-head">
                     <div className="mo-head-left">
                       <span className={`order-status ${getStatusClass(order.status)}`}>{getStatusText(order.status)}</span>
+                      {isMonthly && <span className="order-status status-confirmed">月結</span>}
                       <span className="mo-id">#{order.id}</span>
                       <span className="mo-date">{formatDate(order.createdAt)}</span>
                     </div>
@@ -262,7 +272,7 @@ const MyOrders: React.FC = () => {
                   {/* 進度條（非取消/逾期才顯示） */}
                   {!closed && (
                     <div className="mo-progress">
-                      {PROGRESS_LABELS.map((label, i) => (
+                      {progressLabels.map((label, i) => (
                         <div key={label} className={`mo-step ${i <= stepIdx ? 'done' : ''} ${i === stepIdx ? 'current' : ''}`}>
                           <div className="mo-step-track"><span className="mo-step-dot" /></div>
                           <span className="mo-step-label">{label}</span>

@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-from app.models.order import OrderStatus, DeliveryMethod
+from app.models.order import OrderStatus, DeliveryMethod, PaymentType
 
 
 class OrderItemCreate(BaseModel):
@@ -62,9 +62,14 @@ class StatusChange(BaseModel):
 
 
 class VerifyOrder(BaseModel):
-    """管理員核對完成：輸入運費（可含折扣）並鎖定金額，進入等待付款"""
+    """管理員核對完成：輸入運費（可含折扣）並鎖定金額。
+
+    payment_type=normal：進入等待付款（48h 倒數）
+    payment_type=monthly：月結核准，視同已付款，直接進入準備出貨並實扣庫存
+    """
     shipping_fee: float
     discount: float = 0
+    payment_type: PaymentType = PaymentType.NORMAL
 
 
 class UpdateOrderItems(BaseModel):
@@ -82,6 +87,7 @@ class OrderResponse(BaseModel):
     id: str
     user_id: str
     status: OrderStatus
+    payment_type: PaymentType = PaymentType.NORMAL
     delivery_method: Optional[DeliveryMethod] = None
     subtotal: float
     discount: float

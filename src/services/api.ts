@@ -214,9 +214,9 @@ export const ordersAPI = {
     return response.data;
   },
 
-  // 管理員：核對完成並輸入運費與折扣（等待核對 → 等待付款）
-  verify: async (id: string, shipping_fee: number, discount = 0) => {
-    const response = await api.post(`/orders/${id}/verify`, { shipping_fee, discount });
+  // 管理員：核對完成並輸入運費與折扣（一般 → 等待付款；月結 → 視同已付款直接準備出貨）
+  verify: async (id: string, shipping_fee: number, discount = 0, payment_type: 'normal' | 'monthly' = 'normal') => {
+    const response = await api.post(`/orders/${id}/verify`, { shipping_fee, discount, payment_type });
     return response.data;
   },
 

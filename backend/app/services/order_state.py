@@ -3,6 +3,7 @@
 庫存帳務（P5 保留機制）：
   - 下單：reserved += qty（不動實體庫存）；可售 = stock - reserved
   - 確認入帳 → 準備出貨：stock -= qty、reserved -= qty（實扣）
+  - 月結核准（/verify，payment_type=monthly）：核對 → 準備出貨，直接實扣（不經付款流程）
   - 取消/逾期（實扣前）：reserved -= qty（釋放保留）
   - 取消（準備出貨後）：stock += qty（貨退回實體庫存）
 """

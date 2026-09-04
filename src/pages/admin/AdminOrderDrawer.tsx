@@ -9,7 +9,7 @@ interface Props {
   order: ApiOrder | null;
   onClose: () => void;
   onStatusChange: (orderId: string, status: OrderStatus) => Promise<void>;
-  onVerify: (orderId: string, shippingFee: number, discount?: number) => Promise<void>;
+  onVerify: (orderId: string, shippingFee: number, discount?: number, paymentType?: 'normal' | 'monthly') => Promise<void>;
   onUpdateItems: (
     orderId: string,
     items: Array<{ sku_id: string; quantity: number }>,
@@ -27,6 +27,13 @@ const STATUS_STEPS = [
   OrderStatus.COMPLETED,
 ];
 
+// 月結流程：核准即視同已付款，不經付款/入帳
+const MONTHLY_STATUS_STEPS = [
+  OrderStatus.PENDING_REVIEW,
+  OrderStatus.PREPARING,
+  OrderStatus.COMPLETED,
+];
+
 interface EditItem {
   sku_id: string;
   name: string;
@@ -38,6 +45,7 @@ interface EditItem {
 const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onVerify, onUpdateItems, updatingId }) => {
   const [feeInput, setFeeInput] = useState<string>('');
   const [discountInput, setDiscountInput] = useState<string>('0');
+  const [isMonthly, setIsMonthly] = useState(false);
   const [editItems, setEditItems] = useState<EditItem[]>([]);
 
   // 進入不同訂單時，預填目前運費/折扣/品項
@@ -45,6 +53,7 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
     if (order) {
       setFeeInput(String(order.shipping_fee ?? 0));
       setDiscountInput(String(order.discount ?? 0));
+      setIsMonthly(order.payment_type === 'monthly');
       setEditItems(
         order.items
           .filter(i => i.sku_id)
@@ -75,7 +84,8 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
 
   if (!order) return null;
 
-  const currentStepIndex = STATUS_STEPS.indexOf(order.status as OrderStatus);
+  const steps = order.payment_type === 'monthly' ? MONTHLY_STATUS_STEPS : STATUS_STEPS;
+  const currentStepIndex = steps.indexOf(order.status as OrderStatus);
   const isCancelled = order.status === OrderStatus.CANCELLED || order.status === OrderStatus.EXPIRED;
   const nextStatuses = NEXT_STATUSES[order.status] || [];
 
@@ -95,6 +105,9 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
             <span className={`status ${STATUS_CLASS_FN(order.status)}`}>
               {STATUS_TEXT_FN(order.status)}
             </span>
+            {order.payment_type === 'monthly' && (
+              <span className="status status-confirmed" style={{ marginLeft: 6 }}>月結</span>
+            )}
             {order.locked && <span className="status" style={{ marginLeft: 6 }}>🔒 已鎖定</span>}
           </div>
           <button className="drawer-close" onClick={onClose} title="關閉 (ESC)">✕</button>
@@ -112,13 +125,13 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
             <div className="drawer-section">
               <h4>訂單進度</h4>
               <div className="order-steps">
-                {STATUS_STEPS.map((step, i) => (
+                {steps.map((step, i) => (
                   <div
                     key={step}
                     className={`step ${i <= currentStepIndex ? 'done' : ''} ${i === currentStepIndex ? 'current' : ''}`}
                   >
                     <div className="step-dot" />
-                    {i < STATUS_STEPS.length - 1 && <div className="step-line" />}
+                    {i < steps.length - 1 && <div className="step-line" />}
                     <span className="step-label">{STATUS_TEXT_FN(step)}</span>
                   </div>
                 ))}
@@ -340,6 +353,17 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
                   </div>
                 </div>
 
+                {/* 月結選項 */}
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={isMonthly}
+                    onChange={e => setIsMonthly(e.target.checked)}
+                    style={{ width: 'auto' }}
+                  />
+                  <span>月結訂單（核准後視同已付款，直接進入準備出貨並扣除庫存）</span>
+                </label>
+
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
                   <button
                     className="btn-save"
@@ -349,10 +373,11 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
                       const d = parseFloat(discountInput);
                       if (isNaN(fee) || fee < 0) { alert('請輸入有效運費'); return; }
                       if (isNaN(d) || d < 0) { alert('請輸入有效折扣（可為 0）'); return; }
-                      onVerify(order.id, fee, d);
+                      if (isMonthly && !window.confirm('確認以「月結」核准此訂單？\n訂單將視同已付款、立即扣除庫存並進入準備出貨。')) return;
+                      onVerify(order.id, fee, d, isMonthly ? 'monthly' : 'normal');
                     }}
                   >
-                    核對完成（進入待付款）
+                    {isMonthly ? '月結核准（直接準備出貨）' : '核對完成（進入待付款）'}
                   </button>
                   <button
                     className="btn-delete"

@@ -15,6 +15,11 @@ class OrderStatus(str, enum.Enum):
     EXPIRED = "expired"                  # 已逾期
 
 
+class PaymentType(str, enum.Enum):
+    NORMAL = "normal"    # 一般付款（轉帳）
+    MONTHLY = "monthly"  # 月結（核准即視同已付款）
+
+
 class DeliveryMethod(str, enum.Enum):
     HOME_DELIVERY = "home_delivery"   # 黑貓宅配
     CVS_711 = "cvs_711"               # 7-ELEVEN 取貨
@@ -28,6 +33,8 @@ class Order(Base):
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     # 以純字串儲存狀態（值為 OrderStatus.value），避免跨資料庫 enum 型別維護成本
     status = Column(String, default=OrderStatus.PENDING_REVIEW.value, nullable=False)
+    # 付款方式（PaymentType.value）：月結訂單於核對階段由管理員核准，直接視同已付款
+    payment_type = Column(String, default=PaymentType.NORMAL.value, nullable=False)
     delivery_method = Column(String, nullable=True)  # DeliveryMethod.value
 
     subtotal = Column(Float, nullable=False, default=0)       # 商品小計（後端計算）

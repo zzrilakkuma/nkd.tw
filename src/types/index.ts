@@ -74,6 +74,7 @@ export interface Order {
   shippingFee?: number;
   totalAmount: number;
   status: OrderStatus;
+  paymentType?: 'normal' | 'monthly';
   deliveryMethod?: string;
   paymentDeadline?: string | null;
   createdAt: string;

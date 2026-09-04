@@ -6,7 +6,7 @@ import time
 
 from app.core.database import get_db
 from app.core.config import settings
-from app.models.order import Order, OrderItem, OrderStatus, DeliveryMethod
+from app.models.order import Order, OrderItem, OrderStatus, DeliveryMethod, PaymentType
 from app.models.product import Product, SKU
 from app.models.pickup_location import PickupLocation
 from app.models.user import User
@@ -17,6 +17,7 @@ from app.services.order_state import (
     recompute_totals,
     apply_inventory_on_transition,
     release_reservation,
+    commit_stock,
 )
 from app.services.order_expiry import expire_overdue_orders, is_overdue
 from app.services.audit import log_action
@@ -324,7 +325,11 @@ def verify_order(
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin_user),
 ):
-    """管理員核對完成：輸入運費、鎖定金額，等待核對 → 等待付款"""
+    """管理員核對完成：輸入運費、鎖定金額。
+
+    一般付款：等待核對 → 等待付款（48h 倒數）
+    月結核准：等待核對 → 準備出貨（視同已付款，立即實扣庫存）
+    """
     order = _get_order_or_404(db, order_id)
     if OrderStatus(order.status) != OrderStatus.PENDING_REVIEW:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="僅能在「等待核對」階段核對完成")
@@ -340,16 +345,30 @@ def verify_order(
     order.discount = data.discount
     recompute_totals(order)  # total = subtotal + shipping_fee
     order.locked = True
-    order.status = OrderStatus.PENDING_PAYMENT.value
-    # 進入等待付款：開始 48 小時倒數
-    order.payment_deadline = datetime.utcnow() + timedelta(hours=settings.PAYMENT_DEADLINE_HOURS)
-    log_action(
-        db, admin, "ORDER_VERIFY", "order", order.id,
-        summary=f"核對完成 #{order.id}：運費 {data.shipping_fee:.0f}、折扣 {data.discount:.0f}、總額 {order.total_amount:.0f}，進入等待付款",
-        before={"status": "pending_review", "shipping_fee": old_fee, "discount": old_discount},
-        after={"status": "pending_payment", "shipping_fee": data.shipping_fee,
-               "discount": data.discount, "total_amount": order.total_amount},
-    )
+    order.payment_type = data.payment_type.value
+
+    if data.payment_type == PaymentType.MONTHLY:
+        # 月結：跳過付款流程，直接實扣庫存進入準備出貨
+        commit_stock(db, order)
+        order.status = OrderStatus.PREPARING.value
+        log_action(
+            db, admin, "ORDER_VERIFY", "order", order.id,
+            summary=f"月結核准 #{order.id}：運費 {data.shipping_fee:.0f}、折扣 {data.discount:.0f}、總額 {order.total_amount:.0f}，視同已付款並進入準備出貨",
+            before={"status": "pending_review", "shipping_fee": old_fee, "discount": old_discount},
+            after={"status": "preparing", "payment_type": "monthly", "shipping_fee": data.shipping_fee,
+                   "discount": data.discount, "total_amount": order.total_amount},
+        )
+    else:
+        order.status = OrderStatus.PENDING_PAYMENT.value
+        # 進入等待付款：開始 48 小時倒數
+        order.payment_deadline = datetime.utcnow() + timedelta(hours=settings.PAYMENT_DEADLINE_HOURS)
+        log_action(
+            db, admin, "ORDER_VERIFY", "order", order.id,
+            summary=f"核對完成 #{order.id}：運費 {data.shipping_fee:.0f}、折扣 {data.discount:.0f}、總額 {order.total_amount:.0f}，進入等待付款",
+            before={"status": "pending_review", "shipping_fee": old_fee, "discount": old_discount},
+            after={"status": "pending_payment", "shipping_fee": data.shipping_fee,
+                   "discount": data.discount, "total_amount": order.total_amount},
+        )
     db.commit()
     db.refresh(order)
     return order

@@ -86,6 +86,37 @@ class TestVerifyAndTransitions:
         assert body["locked"] is True
         assert body["payment_deadline"] is not None
 
+    def test_verify_monthly_skips_payment_and_commits_stock(self, client, admin_headers,
+                                                            make_product, make_order):
+        product, sku = make_product(price=500, stock=10)
+        order = make_order(sku["id"], quantity=3)
+
+        res = client.post(f"/api/v1/orders/{order['id']}/verify", headers=admin_headers,
+                          json={"shipping_fee": 100, "payment_type": "monthly"})
+        assert res.status_code == 200
+        body = res.json()
+        assert body["status"] == "preparing"          # 視同已付款，直接準備出貨
+        assert body["payment_type"] == "monthly"
+        assert body["locked"] is True
+        assert body["payment_deadline"] is None       # 月結不設付款期限
+        assert body["total_amount"] == 1600
+
+        # 庫存已實扣、保留解除
+        fresh = get_sku(client, product["id"], sku["id"])
+        assert (fresh["stock"], fresh["reserved"], fresh["available"]) == (7, 0, 7)
+
+    def test_monthly_cancel_returns_stock(self, client, admin_headers, make_product, make_order):
+        product, sku = make_product(stock=10)
+        order = make_order(sku["id"], quantity=2)
+        client.post(f"/api/v1/orders/{order['id']}/verify", headers=admin_headers,
+                    json={"shipping_fee": 0, "payment_type": "monthly"})
+
+        res = client.put(f"/api/v1/orders/{order['id']}/status", headers=admin_headers,
+                         json={"status": "cancelled"})
+        assert res.status_code == 200
+        fresh = get_sku(client, product["id"], sku["id"])
+        assert (fresh["stock"], fresh["reserved"], fresh["available"]) == (10, 0, 10)
+
     def test_review_to_payment_must_use_verify(self, client, admin_headers, make_product, make_order):
         _, sku = make_product()
         order = make_order(sku["id"])

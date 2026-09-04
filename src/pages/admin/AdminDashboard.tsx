@@ -38,6 +38,7 @@ export interface ApiOrder {
   id: string;
   user_id: string;
   status: OrderStatus;
+  payment_type?: 'normal' | 'monthly';
   delivery_method?: string;
   subtotal: number;
   discount: number;
@@ -146,10 +147,15 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const verifyOrder = async (orderId: string, shippingFee: number, discount = 0) => {
+  const verifyOrder = async (
+    orderId: string,
+    shippingFee: number,
+    discount = 0,
+    paymentType: 'normal' | 'monthly' = 'normal',
+  ) => {
     setUpdatingId(orderId);
     try {
-      const updated = await ordersAPI.verify(orderId, shippingFee, discount);
+      const updated = await ordersAPI.verify(orderId, shippingFee, discount, paymentType);
       setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, ...updated } : o)));
       setSelectedOrder(prev => (prev?.id === orderId ? { ...prev, ...updated } : prev));
     } catch (err: any) {
@@ -410,6 +416,9 @@ const AdminDashboard: React.FC = () => {
                           <span className={`status ${getStatusClass(order.status)}`}>
                             {getStatusText(order.status)}
                           </span>
+                          {order.payment_type === 'monthly' && (
+                            <span className="status status-confirmed" style={{ marginLeft: 4 }}>月結</span>
+                          )}
                           {order.payment_info && (
                             <div className="admin-payment-info">
                               <small>
@@ -464,6 +473,9 @@ const AdminDashboard: React.FC = () => {
                       <span className={`status ${getStatusClass(order.status)}`}>
                         {getStatusText(order.status)}
                       </span>
+                      {order.payment_type === 'monthly' && (
+                        <span className="status status-confirmed">月結</span>
+                      )}
                     </div>
                     <div className="moc-middle">
                       <span className="moc-name">{order.shipping_info.name}</span>
