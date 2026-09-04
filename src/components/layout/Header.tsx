@@ -59,6 +59,7 @@ const Header: React.FC = () => {
 
           <nav className="nav-left desktop-nav">
             <Link to="/" className="nav-link">首頁</Link>
+            <Link to="/contact" className="nav-link">聯絡我們</Link>
           </nav>
         </div>
 
@@ -93,26 +94,30 @@ const Header: React.FC = () => {
               <Link to="/login" className="nav-link">登入</Link>
             </>
           )}
-          <Link to="/cart" className="nav-link cart-link">
-            購物車
-            {cartCount > 0 && (
-              <span className={`cart-badge ${cartBounce ? 'bounce' : ''}`}>
-                {cartCount}
-              </span>
-            )}
-          </Link>
+          {currentUser && (
+            <Link to="/cart" className="nav-link cart-link">
+              購物車
+              {cartCount > 0 && (
+                <span className={`cart-badge ${cartBounce ? 'bounce' : ''}`}>
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          )}
         </nav>
 
         {/* Mobile Navigation */}
         <div className="mobile-nav">
-          <Link to="/cart" className="nav-link cart-link">
-            購物車
-            {cartCount > 0 && (
-              <span className={`cart-badge ${cartBounce ? 'bounce' : ''}`}>
-                {cartCount}
-              </span>
-            )}
-          </Link>
+          {currentUser && (
+            <Link to="/cart" className="nav-link cart-link">
+              購物車
+              {cartCount > 0 && (
+                <span className={`cart-badge ${cartBounce ? 'bounce' : ''}`}>
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          )}
           <button
             className={`hamburger-btn ${mobileMenuOpen ? 'active' : ''}`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -128,6 +133,9 @@ const Header: React.FC = () => {
           <div className="mobile-menu">
             <Link to="/" className="mobile-menu-item" onClick={() => setMobileMenuOpen(false)}>
               首頁
+            </Link>
+            <Link to="/contact" className="mobile-menu-item" onClick={() => setMobileMenuOpen(false)}>
+              聯絡我們
             </Link>
             {currentUser ? (
               <>

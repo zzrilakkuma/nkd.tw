@@ -1,9 +1,11 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
 import Layout from './components/layout/Layout';
 import AgeVerification from './components/AgeVerification';
+import RequireAuth from './components/RequireAuth';
 import Home from './pages/Home';
+import RestrictedLanding from './pages/RestrictedLanding';
 import Contact from './pages/Contact';
 import Login from './pages/auth/Login';
 import ChangePassword from './pages/auth/ChangePassword';
@@ -17,6 +19,15 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import Profile from './pages/profile/Profile';
 import './App.css';
 
+/**
+ * 首頁閘門：未登入顯示經銷商限定公告頁，已登入顯示商品頁。
+ * 需在路由渲染時讀取登入狀態，故獨立為元件（避免 App 掛載時的狀態被固定）。
+ */
+const HomeGate: React.FC = () => {
+  const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+  return currentUser ? <Products /> : <RestrictedLanding />;
+};
+
 function App() {
   return (
     <ErrorBoundary>
@@ -24,18 +35,19 @@ function App() {
       <Router>
         <Layout>
           <Routes>
-            <Route path="/" element={<Products />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/contact" element={<Contact />} />
+            <Route path="/" element={<HomeGate />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/change-password" element={<ChangePassword />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/order-confirm" element={<OrderConfirm />} />
-            <Route path="/payment" element={<Payment />} />
-            <Route path="/my-orders" element={<MyOrders />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/home" element={<RequireAuth><Home /></RequireAuth>} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/change-password" element={<RequireAuth><ChangePassword /></RequireAuth>} />
+            <Route path="/cart" element={<RequireAuth><Cart /></RequireAuth>} />
+            <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
+            <Route path="/order-confirm" element={<RequireAuth><OrderConfirm /></RequireAuth>} />
+            <Route path="/payment" element={<RequireAuth><Payment /></RequireAuth>} />
+            <Route path="/my-orders" element={<RequireAuth><MyOrders /></RequireAuth>} />
+            <Route path="/admin" element={<RequireAuth><AdminDashboard /></RequireAuth>} />
+            <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Layout>
       </Router>

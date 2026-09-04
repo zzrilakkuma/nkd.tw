@@ -10,8 +10,9 @@
   padding: 40px 0;
 }
 
-/* 商品頁的 banner 直接貼齊 header（跑馬燈已移除） */
-.main-content:has(.products-page) {
+/* 商品頁與未登入首頁的 banner 直接貼齊 header（跑馬燈已移除） */
+.main-content:has(.products-page),
+.main-content:has(.restricted-landing) {
   padding-top: 0;
 }
 
@@ -297,9 +298,22 @@
 
 .footer-content {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 30px;
-  margin-bottom: 30px;
+  grid-template-columns: 2fr 1fr 1.2fr;
+  gap: 40px;
+  margin-bottom: 36px;
+}
+
+.footer-brand p {
+  color: #a8a396;
+  font-size: 15px;
+  line-height: 1.8;
+  max-width: 340px;
+}
+
+.footer-logo {
+  height: 40px;
+  margin-bottom: 16px;
+  display: block;
 }
 
 .footer-section h3,
@@ -310,30 +324,59 @@
   letter-spacing: 0.08em;
 }
 
+.footer-section h4 {
+  font-size: 16px;
+  color: #c9a961;
+}
+
 .footer-section ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .footer-section ul li {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  color: #a8a396;
+  font-size: 15px;
 }
 
 .footer-section ul li a {
-  color: #8f8a7f;
+  color: #a8a396;
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 .footer-section ul li a:hover {
-  color: var(--color-accent-primary);
+  color: #c9a961;
+}
+
+.footer-warnings {
+  border-top: 1px solid rgba(201, 169, 97, 0.12);
+  padding: 20px 0;
+  text-align: center;
+}
+
+.footer-warnings p {
+  font-size: 14px;
+  color: #f6ad55;
+  margin: 4px 0;
+  line-height: 1.7;
 }
 
 .footer-bottom {
   border-top: 1px solid rgba(201, 169, 97, 0.12);
   padding-top: 20px;
   text-align: center;
-  color: #6f6a60;
+  color: #7d786c;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
 }
 
 /* Home 頁面樣式 - Dark Smoke Theme */
@@ -877,26 +920,6 @@
   border-radius: 8px;
 }
 
-/* Footer 警語與連結 */
-.footer-warning {
-  font-size: 12px;
-  color: #f6ad55;
-  margin: 4px 0 0;
-  line-height: 1.7;
-}
-.footer-links {
-  display: flex;
-  align-items: flex-start;
-}
-.footer-link {
-  color: #a1a1aa;
-  font-size: 14px;
-  text-decoration: none;
-}
-.footer-link:hover {
-  color: #fff;
-}
-
 /* Contact 頁 */
 .contact-page {
   padding: 60px 0 100px;
@@ -928,12 +951,88 @@
   text-align: center;
 }
 .contact-card-icon { font-size: 32px; margin-bottom: 12px; }
+.contact-icon {
+  width: 32px;
+  height: 32px;
+  color: #c9a961;
+  vertical-align: middle;
+}
 .contact-card h3 { margin: 0 0 8px; font-size: 16px; }
-.contact-card-value { color: #c9b8f5; font-weight: 600; margin: 0 0 6px; }
+.contact-card-value { color: #c9a961; font-weight: 600; margin: 0 0 6px; }
+.contact-card-value a { color: #c9a961; text-decoration: none; }
+.contact-card-value a:hover { text-decoration: underline; }
 .contact-card-desc { font-size: 13px; color: #8b8b96; margin: 0; }
 .contact-note {
   text-align: center;
   font-size: 13px;
   color: #8b8b96;
   margin-top: 36px;
+}
+
+/* 未登入首頁（經銷商限定公告） */
+.restricted-landing {
+  padding: 0 0 100px;
+  color: #e5e5ea;
+}
+.restricted-hero {
+  position: relative;
+  width: 100%;
+  height: 72vh;
+  min-height: 420px;
+  overflow: hidden;
+}
+.restricted-hero img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+}
+.restricted-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 70%,
+    rgba(10, 10, 10, 0.7) 90%,
+    #0a0a0a 100%
+  );
+}
+.restricted-notice {
+  text-align: center;
+  padding: 40px 20px 0;
+  margin-bottom: 72px;
+}
+.restricted-text {
+  color: #d4d4dc;
+  line-height: 2;
+  max-width: 620px;
+  margin: 0 auto 28px;
+}
+.restricted-contact {
+  padding-top: 0;
+}
+@media (max-width: 768px) {
+  .restricted-hero {
+    height: 56vh;
+    min-height: 360px;
+  }
+  .restricted-hero img {
+    object-position: 5% 40%;
+  }
+  .restricted-text {
+    text-align: left;
+  }
+}
+.restricted-contact-lead {
+  text-align: center;
+  color: #c9a961;
+  margin-bottom: 32px;
+}
+.restricted-contact h1 {
+  text-align: center;
+  margin-bottom: 12px;
 }
