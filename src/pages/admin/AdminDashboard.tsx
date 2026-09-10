@@ -88,13 +88,16 @@ const AdminDashboard: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<ApiOrder | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
+  // 時間段篩選（依下單日期，YYYY-MM-DD；空字串代表不限）
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 20;
 
   // 篩選或搜尋改變時回到第 1 頁
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, search]);
+  }, [statusFilter, search, dateFrom, dateTo]);
 
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
@@ -203,12 +206,52 @@ const AdminDashboard: React.FC = () => {
     { key: 'expired', label: '已逾期' },
   ];
 
+  // 時間段快捷選項
+  const toYMD = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+  const applyPreset = (preset: 'today' | 'thisMonth' | 'lastMonth' | 'last30' | 'all') => {
+    const now = new Date();
+    if (preset === 'all') { setDateFrom(''); setDateTo(''); return; }
+    if (preset === 'today') { const t = toYMD(now); setDateFrom(t); setDateTo(t); return; }
+    if (preset === 'thisMonth') {
+      setDateFrom(toYMD(new Date(now.getFullYear(), now.getMonth(), 1)));
+      setDateTo(toYMD(now));
+      return;
+    }
+    if (preset === 'lastMonth') {
+      setDateFrom(toYMD(new Date(now.getFullYear(), now.getMonth() - 1, 1)));
+      setDateTo(toYMD(new Date(now.getFullYear(), now.getMonth(), 0)));
+      return;
+    }
+    const from = new Date(now); from.setDate(now.getDate() - 29);
+    setDateFrom(toYMD(from)); setDateTo(toYMD(now));
+  };
+  const hasDateRange = Boolean(dateFrom || dateTo);
+  const dateRangeLabel = !hasDateRange
+    ? '全部期間'
+    : `${dateFrom || '最早'} ～ ${dateTo || '今天'}`;
+
+  // 以本地日期比對（含起訖當天）
+  const inDateRange = (o: ApiOrder) => {
+    if (!hasDateRange) return true;
+    const d = toYMD(new Date(o.created_at));
+    if (dateFrom && d < dateFrom) return false;
+    if (dateTo && d > dateTo) return false;
+    return true;
+  };
+  // 時間段內的訂單：統計卡、狀態數量、列表皆以此為準
+  const rangeOrders = orders.filter(inDateRange);
+
   // 由新到舊
-  const sortedOrders = [...orders].sort(
+  const sortedOrders = [...rangeOrders].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
-  const statusCounts = orders.reduce<Record<string, number>>((m, o) => {
+  const statusCounts = rangeOrders.reduce<Record<string, number>>((m, o) => {
     m[o.status] = (m[o.status] || 0) + 1;
     return m;
   }, {});
@@ -224,7 +267,7 @@ const AdminDashboard: React.FC = () => {
     );
   });
 
-  const pendingCount = orders.filter(o => ACTIONABLE.includes(o.status)).length;
+  const pendingCount = rangeOrders.filter(o => ACTIONABLE.includes(o.status)).length;
 
   // 待審核超過 3 天視為滯留，提醒管理員處理
   const STALE_REVIEW_DAYS = 3;
@@ -232,10 +275,9 @@ const AdminDashboard: React.FC = () => {
     o.status === 'pending_review' &&
     Date.now() - new Date(o.created_at).getTime() > STALE_REVIEW_DAYS * 24 * 60 * 60 * 1000;
   const staleReviewCount = orders.filter(isStaleReview).length;
-  const preparingCount = orders.filter(o => o.status === 'preparing').length;
-  const completedRevenue = orders
-    .filter(o => o.status === 'completed')
-    .reduce((total, o) => total + o.total_amount, 0);
+  const preparingCount = rangeOrders.filter(o => o.status === 'preparing').length;
+  const completedOrders = rangeOrders.filter(o => o.status === 'completed');
+  const completedRevenue = completedOrders.reduce((total, o) => total + o.total_amount, 0);
 
   // 分頁
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE));
@@ -301,11 +343,36 @@ const AdminDashboard: React.FC = () => {
             {staleReviewCount} 筆訂單待核對已超過 {STALE_REVIEW_DAYS} 天，庫存持續被保留中 — 點擊查看
           </div>
         )}
+        <div className="date-range-bar">
+          <span className="date-range-title">時間段</span>
+          <div className="date-range-presets">
+            {([
+              ['all', '全部'],
+              ['today', '今天'],
+              ['thisMonth', '本月'],
+              ['lastMonth', '上月'],
+              ['last30', '近 30 天'],
+            ] as const).map(([key, label]) => (
+              <button key={key} className="filter-chip" onClick={() => applyPreset(key)}>{label}</button>
+            ))}
+          </div>
+          <div className="date-range-inputs">
+            <input type="date" className="date-input" value={dateFrom} max={dateTo || undefined}
+              onChange={e => setDateFrom(e.target.value)} aria-label="起始日期" />
+            <span className="date-range-sep">～</span>
+            <input type="date" className="date-input" value={dateTo} min={dateFrom || undefined}
+              onChange={e => setDateTo(e.target.value)} aria-label="結束日期" />
+            {hasDateRange && (
+              <button className="date-range-clear" onClick={() => applyPreset('all')}>清除</button>
+            )}
+          </div>
+        </div>
+
         <div className="admin-stats">
           <div className="stat-card clickable" onClick={() => setStatusFilter('all')}>
             <h3>總訂單數</h3>
-            <div className="stat-number">{orders.length}</div>
-            <span className="stat-sub">點擊顯示全部</span>
+            <div className="stat-number">{rangeOrders.length}</div>
+            <span className="stat-sub">{dateRangeLabel}</span>
           </div>
           <div
             className={`stat-card clickable ${pendingCount > 0 ? 'stat-card-alert' : ''}`}
@@ -322,6 +389,7 @@ const AdminDashboard: React.FC = () => {
           <div className="stat-card clickable" onClick={() => setStatusFilter('completed')}>
             <h3>已完成營收</h3>
             <div className="stat-number">{formatPrice(completedRevenue)}</div>
+            <span className="stat-sub">{dateRangeLabel}・{completedOrders.length} 筆</span>
           </div>
         </div>
 
@@ -336,7 +404,7 @@ const AdminDashboard: React.FC = () => {
                 >
                   {f.label}
                   <span className="chip-count">
-                    {f.key === 'all' ? orders.length : (statusCounts[f.key] || 0)}
+                    {f.key === 'all' ? rangeOrders.length : (statusCounts[f.key] || 0)}
                   </span>
                 </button>
               ))}
