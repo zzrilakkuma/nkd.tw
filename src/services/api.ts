@@ -226,6 +226,12 @@ export const ordersAPI = {
     return response.data;
   },
 
+  // 管理員：內部備註
+  updateAdminNote: async (id: string, adminNote: string) => {
+    const response = await api.put(`/orders/${id}/admin-note`, { admin_note: adminNote });
+    return response.data;
+  },
+
   getAllOrders: async () => {
     const response = await api.get('/orders/admin/all');
     return response.data;

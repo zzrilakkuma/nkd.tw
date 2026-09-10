@@ -26,8 +26,14 @@ class Settings(BaseSettings):
     # 逾期掃描間隔（秒）
     EXPIRY_SWEEP_INTERVAL_SECONDS: int = int(os.getenv("EXPIRY_SWEEP_INTERVAL_SECONDS", "600"))
 
+    # Email 通知（Resend）：未設定 RESEND_API_KEY 時自動停用寄信
+    RESEND_API_KEY: str = os.getenv("RESEND_API_KEY", "")
+    MAIL_FROM: str = os.getenv("MAIL_FROM", "NKD 訂單通知 <orders@nkd.tw>")
+    MAIL_REPLY_TO: str = os.getenv("MAIL_REPLY_TO", "")
+    ADMIN_NOTIFY_EMAIL: str = os.getenv("ADMIN_NOTIFY_EMAIL", "")
+
     # 各配送方式的預設運費（管理員核對時仍可調整）
-    SHIPPING_FEE_HOME_DELIVERY: float = float(os.getenv("SHIPPING_FEE_HOME_DELIVERY", "100"))
+    SHIPPING_FEE_HOME_DELIVERY: float = float(os.getenv("SHIPPING_FEE_HOME_DELIVERY", "120"))
     SHIPPING_FEE_CVS_711: float = float(os.getenv("SHIPPING_FEE_CVS_711", "60"))
     SHIPPING_FEE_SELF_PICKUP: float = float(os.getenv("SHIPPING_FEE_SELF_PICKUP", "0"))
 

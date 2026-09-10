@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, Integer, DateTime, ForeignKey, JSON, Boolean
+from sqlalchemy import Column, String, Text, Float, Integer, DateTime, ForeignKey, JSON, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -43,6 +43,9 @@ class Order(Base):
     total_amount = Column(Float, nullable=False)              # = subtotal - discount + shipping_fee
 
     invoice = Column(JSON, nullable=True)                     # 發票資訊 {tax_id, company_name}（選填）
+    # 下單帳號快照 {username, email, company_name, contact_name, contact_phone, tax_id}，僅後台 API 回傳
+    buyer = Column(JSON, nullable=True)
+    admin_note = Column(Text, nullable=True)                  # 管理員內部備註（僅後台 API 回傳）
 
     locked = Column(Boolean, nullable=False, default=False)   # 核對完成後鎖定
     paid_at = Column(DateTime, nullable=True)                 # 客戶提交付款時間

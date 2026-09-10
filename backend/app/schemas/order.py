@@ -56,6 +56,11 @@ class OrderCreate(BaseModel):
     invoice: Optional[InvoiceInfo] = None
 
 
+class AdminNoteUpdate(BaseModel):
+    """管理員內部備註（客戶看不到）"""
+    admin_note: str = ""
+
+
 class StatusChange(BaseModel):
     """管理員變更訂單狀態（後端驗證是否為合法轉換）"""
     status: OrderStatus
@@ -105,3 +110,9 @@ class OrderResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class AdminOrderResponse(OrderResponse):
+    """後台專用：多帶下單帳號快照"""
+    buyer: Optional[Dict[str, Any]] = None
+    admin_note: Optional[str] = None

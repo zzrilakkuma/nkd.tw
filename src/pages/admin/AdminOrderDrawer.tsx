@@ -15,6 +15,7 @@ interface Props {
     items: Array<{ sku_id: string; quantity: number }>,
     discount?: number,
   ) => Promise<void>;
+  onSaveNote: (orderId: string, note: string) => Promise<void>;
   updatingId: string | null;
 }
 
@@ -42,11 +43,12 @@ interface EditItem {
   quantity: number;
 }
 
-const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onVerify, onUpdateItems, updatingId }) => {
+const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onVerify, onUpdateItems, onSaveNote, updatingId }) => {
   const [feeInput, setFeeInput] = useState<string>('');
   const [discountInput, setDiscountInput] = useState<string>('0');
   const [isMonthly, setIsMonthly] = useState(false);
   const [editItems, setEditItems] = useState<EditItem[]>([]);
+  const [noteInput, setNoteInput] = useState('');
 
   // 進入不同訂單時，預填目前運費/折扣/品項
   useEffect(() => {
@@ -54,6 +56,7 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
       setFeeInput(String(order.shipping_fee ?? 0));
       setDiscountInput(String(order.discount ?? 0));
       setIsMonthly(order.payment_type === 'monthly');
+      setNoteInput(order.admin_note || '');
       setEditItems(
         order.items
           .filter(i => i.sku_id)
@@ -139,6 +142,66 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
             </div>
           )}
 
+          {/* 下單帳號（下單當下快照） */}
+          <div className="drawer-section">
+            <h4>下單帳號</h4>
+            {order.buyer ? (
+              <div className="info-grid">
+                <div className="info-row">
+                  <span className="info-label">帳號</span>
+                  <span className="info-value">{order.buyer.username}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Email</span>
+                  <span className="info-value">{order.buyer.email}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">公司名稱</span>
+                  <span className="info-value">{order.buyer.company_name || '—'}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">聯絡人</span>
+                  <span className="info-value">{order.buyer.contact_name || '—'}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">聯絡電話</span>
+                  <span className="info-value">{order.buyer.contact_phone || '—'}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">統編</span>
+                  <span className="info-value">{order.buyer.tax_id || '—'}</span>
+                </div>
+              </div>
+            ) : (
+              <p className="info-empty">此訂單無帳號快照（舊資料）</p>
+            )}
+          </div>
+
+          {/* 管理員內部備註 */}
+          <div className="drawer-section">
+            <h4>管理員備註 <span className="info-empty" style={{ display: 'inline', fontWeight: 400 }}>（僅後台可見）</span></h4>
+            <textarea
+              className="admin-note-input"
+              rows={3}
+              value={noteInput}
+              onChange={e => setNoteInput(e.target.value)}
+              placeholder="例：客戶要求分兩箱寄送、已電話確認地址…"
+              disabled={updatingId === order.id}
+            />
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+              <button
+                className="btn-save"
+                disabled={updatingId === order.id || noteInput.trim() === (order.admin_note || '')}
+                onClick={() => onSaveNote(order.id, noteInput)}
+              >
+                儲存備註
+              </button>
+              {order.admin_note && (
+                <span className="info-empty">已有備註</span>
+              )}
+            </div>
+          </div>
+
           {/* 配送 / 收件資訊 */}
           <div className="drawer-section">
             <h4>配送資訊（{deliveryLabel(order.delivery_method)}）</h4>
@@ -156,10 +219,6 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
                   <div className="info-row">
                     <span className="info-label">門市名稱</span>
                     <span className="info-value">{order.shipping_info.store_name}</span>
-                  </div>
-                  <div className="info-row">
-                    <span className="info-label">門市店號</span>
-                    <span className="info-value">{order.shipping_info.store_code}</span>
                   </div>
                 </>
               ) : order.delivery_method === 'self_pickup' ? (

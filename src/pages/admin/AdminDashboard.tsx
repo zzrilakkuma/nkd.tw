@@ -43,6 +43,15 @@ export interface ApiOrder {
   subtotal: number;
   discount: number;
   invoice?: { tax_id: string; company_name: string } | null;
+  buyer?: {
+    username?: string;
+    email?: string;
+    company_name?: string | null;
+    contact_name?: string | null;
+    contact_phone?: string | null;
+    tax_id?: string | null;
+  } | null;
+  admin_note?: string | null;
   shipping_fee: number;
   total_amount: number;
   locked: boolean;
@@ -55,7 +64,6 @@ export interface ApiOrder {
     postalCode?: string;
     address?: string;
     store_name?: string;
-    store_code?: string;
     pickup_location_id?: string;
     location_name?: string;
     contact?: string;
@@ -142,6 +150,19 @@ const AdminDashboard: React.FC = () => {
       setSelectedOrder(prev => (prev?.id === orderId ? { ...prev, ...updated } : prev));
     } catch (err: any) {
       alert(err.response?.data?.detail || '品項調整失敗，請再試一次');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const saveAdminNote = async (orderId: string, note: string) => {
+    setUpdatingId(orderId);
+    try {
+      const updated = await ordersAPI.updateAdminNote(orderId, note);
+      setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, ...updated } : o)));
+      setSelectedOrder(prev => (prev?.id === orderId ? { ...prev, ...updated } : prev));
+    } catch (err: any) {
+      alert(err.response?.data?.detail || '備註儲存失敗，請再試一次');
     } finally {
       setUpdatingId(null);
     }
@@ -390,12 +411,18 @@ const AdminDashboard: React.FC = () => {
                         <td>{formatDate(order.created_at)}</td>
                         <td>
                           <div className="customer-info">
+                            {order.buyer && (
+                              <div className="buyer-line">
+                                <strong>{order.buyer.company_name || order.buyer.username}</strong>
+                                {order.buyer.company_name && <span className="phone"> @{order.buyer.username}</span>}
+                              </div>
+                            )}
                             <div>{order.shipping_info.name}</div>
                             <div className="phone">{order.shipping_info.phone}</div>
                             <div className="address">
                               <span className="category-badge">{deliveryLabel(order.delivery_method)}</span>{' '}
                               {order.delivery_method === 'cvs_711'
-                                ? `${order.shipping_info.store_name || ''} (${order.shipping_info.store_code || ''})`
+                                ? order.shipping_info.store_name || ''
                                 : order.delivery_method === 'self_pickup'
                                 ? order.shipping_info.location_name
                                 : `${order.shipping_info.city || ''} ${order.shipping_info.address || ''}`}
@@ -478,7 +505,9 @@ const AdminDashboard: React.FC = () => {
                       )}
                     </div>
                     <div className="moc-middle">
-                      <span className="moc-name">{order.shipping_info.name}</span>
+                      <span className="moc-name">
+                        {order.buyer ? (order.buyer.company_name || order.buyer.username) : order.shipping_info.name}
+                      </span>
                       <span className="moc-amount">{formatPrice(order.total_amount)}</span>
                     </div>
                     <div className="moc-bottom">
@@ -546,6 +575,7 @@ const AdminDashboard: React.FC = () => {
         onClose={() => setSelectedOrder(null)}
         onStatusChange={updateOrderStatus}
         onVerify={verifyOrder}
+        onSaveNote={saveAdminNote}
         onUpdateItems={updateOrderItems}
         updatingId={updatingId}
       />

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime, timedelta
@@ -10,7 +10,7 @@ from app.models.order import Order, OrderItem, OrderStatus, DeliveryMethod, Paym
 from app.models.product import Product, SKU
 from app.models.pickup_location import PickupLocation
 from app.models.user import User
-from app.schemas.order import OrderCreate, StatusChange, VerifyOrder, UpdateOrderItems, PaymentSubmit, OrderResponse
+from app.schemas.order import OrderCreate, StatusChange, VerifyOrder, UpdateOrderItems, PaymentSubmit, OrderResponse, AdminOrderResponse, AdminNoteUpdate
 from app.api.dependencies import get_current_user, get_current_admin_user
 from app.services.order_state import (
     can_transition,
@@ -21,6 +21,7 @@ from app.services.order_state import (
 )
 from app.services.order_expiry import expire_overdue_orders, is_overdue
 from app.services.audit import log_action
+from app.services.email_notify import snapshot_order, send_status_email
 
 router = APIRouter()
 
@@ -28,7 +29,7 @@ router = APIRouter()
 # 各配送方式的必填欄位（自取另行以 pickup_location_id 解析）
 _REQUIRED_SHIPPING_FIELDS = {
     DeliveryMethod.HOME_DELIVERY: ["name", "phone", "city", "postalCode", "address"],
-    DeliveryMethod.CVS_711: ["name", "phone", "store_name", "store_code"],
+    DeliveryMethod.CVS_711: ["name", "phone", "store_name"],
 }
 
 
@@ -71,6 +72,18 @@ _last_timestamp = 0
 _sequence = 0
 
 
+def snapshot_buyer(user: User) -> dict:
+    """下單當下的帳號資料快照，日後帳號資料變更不影響舊訂單。"""
+    return {
+        "username": user.username,
+        "email": user.email,
+        "company_name": user.company_name,
+        "contact_name": user.contact_name,
+        "contact_phone": user.contact_phone,
+        "tax_id": user.tax_id,
+    }
+
+
 def generate_order_id() -> str:
     """生成6位純數字訂單編號（時間戳4位 + 流水號2位）"""
     global _last_timestamp, _sequence
@@ -93,6 +106,7 @@ def _get_order_or_404(db: Session, order_id: str) -> Order:
 @router.post("", response_model=OrderResponse)
 def create_order(
     order_data: OrderCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -122,6 +136,7 @@ def create_order(
         total_amount=0,
         shipping_info=shipping_info,
         invoice=invoice,
+        buyer=snapshot_buyer(current_user),
     )
 
     for item_data in order_data.items:
@@ -153,6 +168,7 @@ def create_order(
     db.add(order)
     db.commit()
     db.refresh(order)
+    background_tasks.add_task(send_status_email, snapshot_order(order), "有新訂單待核對")
     return order
 
 
@@ -164,7 +180,7 @@ def get_user_orders(
     return db.query(Order).filter(Order.user_id == current_user.id).all()
 
 
-@router.get("/admin/all", response_model=List[OrderResponse])
+@router.get("/admin/all", response_model=List[AdminOrderResponse])
 def get_all_orders(
     db: Session = Depends(get_db),
     _: User = Depends(get_current_admin_user),
@@ -189,6 +205,7 @@ def get_order(
 def submit_payment(
     order_id: str,
     data: PaymentSubmit,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -204,6 +221,8 @@ def submit_payment(
         apply_inventory_on_transition(db, order, OrderStatus.PENDING_PAYMENT, OrderStatus.EXPIRED)
         order.status = OrderStatus.EXPIRED.value
         db.commit()
+        # HTTPException 回應不會執行 background tasks，逾期通知信直接同步寄出
+        send_status_email(snapshot_order(order))
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="此訂單已超過付款期限，已自動取消")
 
     order.status = OrderStatus.PENDING_CONFIRM.value
@@ -214,12 +233,14 @@ def submit_payment(
     }
     db.commit()
     db.refresh(order)
+    background_tasks.add_task(send_status_email, snapshot_order(order), "客戶已提交付款，待確認入帳")
     return order
 
 
 @router.post("/{order_id}/cancel", response_model=OrderResponse)
 def cancel_order(
     order_id: str,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -241,6 +262,7 @@ def cancel_order(
     )
     db.commit()
     db.refresh(order)
+    background_tasks.add_task(send_status_email, snapshot_order(order))
     return order
 
 
@@ -322,6 +344,7 @@ def update_order_items(
 def verify_order(
     order_id: str,
     data: VerifyOrder,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin_user),
 ):
@@ -371,6 +394,31 @@ def verify_order(
         )
     db.commit()
     db.refresh(order)
+    background_tasks.add_task(send_status_email, snapshot_order(order))
+    return order
+
+
+@router.put("/{order_id}/admin-note", response_model=AdminOrderResponse)
+def update_admin_note(
+    order_id: str,
+    data: AdminNoteUpdate,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin_user),
+):
+    """管理員內部備註：純文字，客戶端不會看到。"""
+    order = _get_order_or_404(db, order_id)
+    before = order.admin_note or ""
+    after = data.admin_note.strip()
+    if before == after:
+        return order
+    order.admin_note = after or None
+    log_action(
+        db, admin, "ORDER_ADMIN_NOTE", "order", order.id,
+        summary=f"訂單 #{order.id} 更新管理員備註",
+        before={"admin_note": before}, after={"admin_note": after},
+    )
+    db.commit()
+    db.refresh(order)
     return order
 
 
@@ -378,6 +426,7 @@ def verify_order(
 def change_status(
     order_id: str,
     data: StatusChange,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin_user),
 ):
@@ -413,4 +462,5 @@ def change_status(
     )
     db.commit()
     db.refresh(order)
+    background_tasks.add_task(send_status_email, snapshot_order(order))
     return order
