@@ -16,9 +16,11 @@ const RestrictedLanding: React.FC = () => {
         <p className="restricted-text">
           本平台僅供完成資格審核之合作經銷商使用，提供經銷業務及訂單管理服務，不對一般消費者開放瀏覽、註冊或購買。
         </p>
-        <Link to="/login" className="cta-button">
+        <Link to="/login" className="cta-button restricted-cta">
           經銷商登入
+          <span className="cta-arrow" aria-hidden="true">→</span>
         </Link>
+        <p className="restricted-cta-hint">尚無帳號？合作洽詢請參考下方聯繫方式</p>
       </section>
 
       <div className="container">

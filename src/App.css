@@ -1012,6 +1012,27 @@
   max-width: 620px;
   margin: 0 auto 28px;
 }
+.restricted-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.restricted-cta .cta-arrow {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+.restricted-cta:hover {
+  transform: translateY(-2px);
+}
+.restricted-cta:hover .cta-arrow {
+  transform: translateX(5px);
+}
+.restricted-cta-hint {
+  margin-top: 18px;
+  font-size: 14px;
+  color: #8b8b96;
+}
 .restricted-contact {
   padding-top: 0;
 }
@@ -1025,6 +1046,10 @@
   }
   .restricted-text {
     text-align: left;
+  }
+  .restricted-cta {
+    width: 100%;
+    max-width: 360px;
   }
 }
 .restricted-contact-lead {
