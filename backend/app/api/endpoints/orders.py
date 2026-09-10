@@ -455,6 +455,8 @@ def change_status(
     apply_inventory_on_transition(db, order, current, target)
 
     order.status = target.value
+    if target == OrderStatus.COMPLETED:
+        order.completed_at = datetime.utcnow()
     log_action(
         db, admin, "ORDER_STATUS_CHANGE", "order", order.id,
         summary=f"訂單 #{order.id} 狀態：{current.value} → {target.value}",

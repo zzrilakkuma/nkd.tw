@@ -101,6 +101,7 @@ class OrderResponse(BaseModel):
     total_amount: float
     locked: bool
     paid_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
     payment_deadline: Optional[datetime] = None
     shipping_info: Dict[str, Any]
     payment_info: Optional[Dict[str, Any]] = None

@@ -49,6 +49,7 @@ class Order(Base):
 
     locked = Column(Boolean, nullable=False, default=False)   # 核對完成後鎖定
     paid_at = Column(DateTime, nullable=True)                 # 客戶提交付款時間
+    completed_at = Column(DateTime, nullable=True)            # 轉為已完成的時間（營收依此計算）
     payment_deadline = Column(DateTime, nullable=True)        # 付款截止（P5：進待付款 +48h）
 
     shipping_info = Column(JSON, nullable=False)  # 配送資訊

@@ -56,6 +56,7 @@ export interface ApiOrder {
   total_amount: number;
   locked: boolean;
   paid_at?: string | null;
+  completed_at?: string | null;
   payment_deadline?: string | null;
   shipping_info: {
     name?: string;
@@ -236,13 +237,18 @@ const AdminDashboard: React.FC = () => {
     : `${dateFrom || '最早'} ～ ${dateTo || '今天'}`;
 
   // 以本地日期比對（含起訖當天）
-  const inDateRange = (o: ApiOrder) => {
+  const ymdInRange = (iso: string) => {
     if (!hasDateRange) return true;
-    const d = toYMD(new Date(o.created_at));
+    const d = toYMD(new Date(iso));
     if (dateFrom && d < dateFrom) return false;
     if (dateTo && d > dateTo) return false;
     return true;
   };
+  // 已完成訂單依「完成日期」篩選（營收以此計算），其餘依下單日期
+  const inDateRange = (o: ApiOrder) =>
+    o.status === 'completed'
+      ? ymdInRange(o.completed_at || o.updated_at)
+      : ymdInRange(o.created_at);
   // 時間段內的訂單：統計卡、狀態數量、列表皆以此為準
   const rangeOrders = orders.filter(inDateRange);
 
@@ -389,7 +395,7 @@ const AdminDashboard: React.FC = () => {
           <div className="stat-card clickable" onClick={() => setStatusFilter('completed')}>
             <h3>已完成營收</h3>
             <div className="stat-number">{formatPrice(completedRevenue)}</div>
-            <span className="stat-sub">{dateRangeLabel}・{completedOrders.length} 筆</span>
+            <span className="stat-sub">{dateRangeLabel}・{completedOrders.length} 筆（依完成日期）</span>
           </div>
         </div>
 
