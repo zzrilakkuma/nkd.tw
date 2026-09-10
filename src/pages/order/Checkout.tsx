@@ -14,7 +14,6 @@ interface CheckoutData {
   city: string;
   postalCode: string;
   store_name: string;
-  store_code: string;
   invoice_tax_id: string;
   invoice_company: string;
   notes?: string;
@@ -100,7 +99,7 @@ const Checkout: React.FC = () => {
         alert('請填寫完整宅配收件資訊'); return;
       }
     } else if (method === DeliveryMethod.CVS_711) {
-      if (!data.name || !data.phone || !data.store_name || !data.store_code) {
+      if (!data.name || !data.phone || !data.store_name) {
         alert('請填寫完整 7-11 取貨資訊'); return;
       }
     } else if (method === DeliveryMethod.SELF_PICKUP) {
@@ -113,7 +112,7 @@ const Checkout: React.FC = () => {
     if (method === DeliveryMethod.HOME_DELIVERY) {
       shipping_info = { ...shipping_info, name: data.name, phone: data.phone, city: data.city, postalCode: data.postalCode, address: data.address };
     } else if (method === DeliveryMethod.CVS_711) {
-      shipping_info = { ...shipping_info, name: data.name, phone: data.phone, store_name: data.store_name, store_code: data.store_code };
+      shipping_info = { ...shipping_info, name: data.name, phone: data.phone, store_name: data.store_name };
     } else {
       shipping_info = { ...shipping_info, name: data.name, phone: data.phone, pickup_location_id: pickupId };
     }
@@ -241,7 +240,7 @@ const Checkout: React.FC = () => {
               {/* 7-11 */}
               {method === DeliveryMethod.CVS_711 && (
                 <>
-                  <p className="delivery-note-hint">請至 7-ELEVEN 官網查詢門市名稱與店號後手動填寫。</p>
+                  <p className="delivery-note-hint">請至 7-ELEVEN 官網查詢門市名稱後手動填寫。</p>
                   <div className="form-row">
                     <div className="form-group">
                       <label>取件人姓名</label>
@@ -252,15 +251,9 @@ const Checkout: React.FC = () => {
                       <input {...register('phone', { required: true })} className={errors.phone ? 'error' : ''} />
                     </div>
                   </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>門市名稱</label>
-                      <input {...register('store_name', { required: true })} className={errors.store_name ? 'error' : ''} placeholder="例：幸福門市" />
-                    </div>
-                    <div className="form-group">
-                      <label>門市店號</label>
-                      <input {...register('store_code', { required: true })} className={errors.store_code ? 'error' : ''} placeholder="例：123456" />
-                    </div>
+                  <div className="form-group">
+                    <label>門市名稱</label>
+                    <input {...register('store_name', { required: true })} className={errors.store_name ? 'error' : ''} placeholder="例：幸福門市" />
                   </div>
                 </>
               )}

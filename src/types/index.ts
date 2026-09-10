@@ -127,7 +127,6 @@ export interface ShippingInfo {
   note?: string;
   // 7-11
   store_name?: string;
-  store_code?: string;
   // 自取（快照）
   pickup_location_id?: string;
   location_name?: string;

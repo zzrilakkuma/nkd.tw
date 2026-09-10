@@ -247,7 +247,7 @@ AuditLog
   - 驗證：migration（狀態重映 8 筆）、API 完整流程（核對→付款→入帳→出貨→完成、非法轉換擋下、取消釋放庫存）、tsc/build 通過、瀏覽器實測後台 7 態與進度條正常
 - ✅ **P3 + P4 已完成**（2026-08-18，配送方式 + 人工核對運費）
   - 三種配送：`home_delivery`（宅配）/ `cvs_711`（7-11）/ `self_pickup`（自取）
-  - 預設運費（config，可調）：宅配 100 / 7-11 60 / 自取 0；下單即帶預設，管理員核對時可調整
+  - 預設運費（config，可調）：宅配 120 / 7-11 60 / 自取 0；下單即帶預設，管理員核對時可調整
   - `PickupLocation` 自取地點 model + CRUD + 後台「自取點」分頁；下單時**快照**地點資訊
   - Migration `0005_p3_delivery`：orders 加 `delivery_method`（既有回填 home_delivery）+ 建 pickup_locations
   - 端點：`/pickup-locations` CRUD、`POST /orders/{id}/verify`（輸入運費、鎖定金額、review→payment）；`/status` 擋掉 review→payment（強制走 verify）

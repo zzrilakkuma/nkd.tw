@@ -24,10 +24,11 @@ const Payment: React.FC = () => {
   }, [location, navigate]);
 
   const bankInfo = {
-    bankName: '台灣銀行',
-    bankCode: '004',
-    accountNumber: '123-456-789-012',
-    accountName: '水煙商城有限公司'
+    bankName: '合作金庫',
+    bankCode: '006',
+    accountNumber: '1759717139470',
+    accountName: '霓酷町國際有限公司',
+    taxId: '60575790'
   };
 
   const handlePaymentComplete = () => {
@@ -124,6 +125,10 @@ const Payment: React.FC = () => {
                   <span className="label">戶名:</span>
                   <span className="value">{bankInfo.accountName}</span>
                 </div>
+                <div className="bank-row">
+                  <span className="label">統編:</span>
+                  <span className="value">{bankInfo.taxId}</span>
+                </div>
                 <div className="bank-row highlight">
                   <span className="label">轉帳金額:</span>
                   <span className="value amount">{formatPrice(order.totalAmount)}</span>
@@ -138,7 +143,6 @@ const Payment: React.FC = () => {
                 <li>轉帳時請備註您的訂單編號: <strong>{order.id}</strong></li>
                 <li>轉帳完成後，請點「已完成轉帳」並填入帳號末五碼</li>
                 <li>我們確認入帳後，將立即開始準備您的商品並安排出貨</li>
-                <li>如有任何問題，請聯絡客服: 02-1234-5678</li>
               </ul>
             </div>
 

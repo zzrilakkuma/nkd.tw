@@ -341,7 +341,7 @@ const MyOrders: React.FC = () => {
                           <h4>配送資訊（{deliveryLabel(order.deliveryMethod)}）</h4>
                           <p>{order.deliveryMethod === 'self_pickup' ? '取件人' : '收件人'}：{order.shippingInfo.name}　{order.shippingInfo.phone}</p>
                           {order.deliveryMethod === 'cvs_711' ? (
-                            <p>取貨門市：{order.shippingInfo.store_name}（{order.shippingInfo.store_code}）</p>
+                            <p>取貨門市：{order.shippingInfo.store_name}</p>
                           ) : order.deliveryMethod === 'self_pickup' ? (
                             <p>自取地點：{order.shippingInfo.location_name} {order.shippingInfo.address}</p>
                           ) : (
@@ -369,9 +369,10 @@ const MyOrders: React.FC = () => {
                   {order.status === 'pending_payment' && (
                     <div className="mo-pay-box">
                       <div className="mo-pay-grid">
-                        <div><span className="mo-pay-label">銀行</span>台灣銀行 (004)</div>
-                        <div><span className="mo-pay-label">帳號</span><strong className="mo-pay-account">123-456-789-012</strong></div>
-                        <div><span className="mo-pay-label">戶名</span>水煙商城有限公司</div>
+                        <div><span className="mo-pay-label">銀行</span>合作金庫 (006)</div>
+                        <div><span className="mo-pay-label">帳號</span><strong className="mo-pay-account">1759717139470</strong></div>
+                        <div><span className="mo-pay-label">戶名</span>霓酷町國際有限公司</div>
+                        <div><span className="mo-pay-label">統編</span>60575790</div>
                         <div><span className="mo-pay-label">金額</span><strong>{formatPrice(order.totalAmount)}</strong></div>
                       </div>
                       <p className="mo-pay-note">轉帳備註請填寫訂單編號 <strong>{order.id}</strong></p>

@@ -62,7 +62,7 @@ const OrderConfirm: React.FC = () => {
               <p><strong>{order.deliveryMethod === 'self_pickup' ? '取件人' : '收件人'}:</strong> {order.shippingInfo.name}</p>
               <p><strong>聯絡電話:</strong> {order.shippingInfo.phone}</p>
               {order.deliveryMethod === 'cvs_711' ? (
-                <p><strong>取貨門市:</strong> {order.shippingInfo.store_name}（{order.shippingInfo.store_code}）</p>
+                <p><strong>取貨門市:</strong> {order.shippingInfo.store_name}</p>
               ) : order.deliveryMethod === 'self_pickup' ? (
                 <p><strong>自取地點:</strong> {order.shippingInfo.location_name} {order.shippingInfo.address}</p>
               ) : (

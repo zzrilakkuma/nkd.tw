@@ -2,7 +2,7 @@ import { DeliveryMethod } from '../types';
 
 // 前端顯示用的預設運費（需與後端 config.default_shipping_fees 一致；實際金額以後端為準）
 export const DEFAULT_SHIPPING_FEE: Record<string, number> = {
-  home_delivery: 100,
+  home_delivery: 120,
   cvs_711: 60,
   self_pickup: 0,
 };
