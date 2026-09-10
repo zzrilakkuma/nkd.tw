@@ -1897,3 +1897,179 @@ tbody tr:hover {
   .date-range-inputs { margin-left: 0; width: 100%; }
   .date-input { flex: 1; min-width: 0; }
 }
+
+/* ===== 後台：已完成營收趨勢圖 ===== */
+.stat-card.stat-card-active {
+  border-color: var(--color-accent-primary, #c9a961);
+}
+.stat-hint {
+  color: var(--color-accent-primary, #c9a961);
+  opacity: 0.8;
+}
+.revenue-chart-card {
+  margin: -8px 0 24px;
+  padding: 18px 20px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border-glass, rgba(255, 255, 255, 0.12));
+  background: var(--glass-bg, rgba(255, 255, 255, 0.05));
+}
+.revenue-chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.revenue-chart-head h4 {
+  margin: 0 0 2px;
+  font-size: 15px;
+  color: var(--color-text-primary, #fff);
+}
+.revenue-chart-sub {
+  font-size: 12px;
+  color: var(--color-text-muted, #a1a1a1);
+}
+.revenue-chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.revenue-chart-seg {
+  display: inline-flex;
+  border: 1px solid var(--border-glass, rgba(255, 255, 255, 0.12));
+  border-radius: 999px;
+  overflow: hidden;
+}
+.revenue-chart-seg button {
+  padding: 5px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary, #cfcfcf);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.revenue-chart-seg button.active {
+  background: var(--color-accent-primary, #c9a961);
+  color: #1a1a1a;
+}
+.revenue-chart-link {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted, #a1a1a1);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.revenue-chart-link:hover { color: var(--color-accent-primary, #c9a961); }
+.revenue-chart-close {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border-glass, rgba(255, 255, 255, 0.12));
+  background: transparent;
+  color: var(--color-text-muted, #a1a1a1);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.revenue-chart-close:hover { color: var(--color-text-primary, #fff); }
+.revenue-chart-empty {
+  margin: 24px 0;
+  text-align: center;
+  color: var(--color-text-muted, #a1a1a1);
+  font-size: 13px;
+}
+.revenue-chart-plot {
+  position: relative;
+}
+.revenue-chart-plot svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.rc-grid {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1;
+}
+.rc-baseline {
+  stroke: rgba(255, 255, 255, 0.22);
+  stroke-width: 1;
+}
+.rc-tick {
+  fill: var(--color-text-muted, #a1a1a1);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.rc-label {
+  fill: var(--color-text-secondary, #cfcfcf);
+  font-size: 11px;
+  font-weight: 600;
+}
+.rc-bar {
+  fill: var(--color-accent-primary, #c9a961);
+  transition: fill 0.12s ease;
+}
+.rc-bar.hover {
+  fill: #e0c67a;
+}
+.revenue-chart-plot rect:focus {
+  outline: none;
+}
+.rc-tooltip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 10px));
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(20, 20, 20, 0.96);
+  border: 1px solid var(--border-glass, rgba(255, 255, 255, 0.12));
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rc-tooltip strong {
+  color: var(--color-text-primary, #fff);
+  font-size: 14px;
+}
+.rc-tooltip span {
+  color: var(--color-text-muted, #a1a1a1);
+  font-size: 11px;
+}
+.revenue-table-wrap {
+  max-height: 280px;
+  overflow: auto;
+}
+.revenue-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.revenue-table th, .revenue-table td {
+  padding: 6px 10px;
+  text-align: right;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--color-text-secondary, #cfcfcf);
+  font-variant-numeric: tabular-nums;
+}
+.revenue-table th:first-child, .revenue-table td:first-child { text-align: left; }
+.revenue-table th {
+  color: var(--color-text-muted, #a1a1a1);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  background: #161616;
+}
+.revenue-table tr.zero td { color: var(--color-text-muted, #a1a1a1); opacity: 0.6; }
+.revenue-table tfoot td {
+  color: var(--color-text-primary, #fff);
+  font-weight: 700;
+  border-bottom: 0;
+}
+@media (max-width: 640px) {
+  .revenue-chart-card { padding: 14px 12px 10px; }
+  .revenue-chart-controls { width: 100%; justify-content: space-between; }
+}

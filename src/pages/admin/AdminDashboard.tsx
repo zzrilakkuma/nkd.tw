@@ -10,6 +10,7 @@ import AdminUsers from './AdminUsers';
 import AdminPickupLocations from './AdminPickupLocations';
 import AdminAuditLogs from './AdminAuditLogs';
 import AdminOrderDrawer from './AdminOrderDrawer';
+import RevenueChart from './RevenueChart';
 import '../../styles/admin.css';
 import '../../styles/profile.css';
 
@@ -93,6 +94,7 @@ const AdminDashboard: React.FC = () => {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(1);
+  const [showRevenueChart, setShowRevenueChart] = useState(false);
   const PAGE_SIZE = 20;
 
   // 篩選或搜尋改變時回到第 1 頁
@@ -392,12 +394,25 @@ const AdminDashboard: React.FC = () => {
             <h3>準備出貨</h3>
             <div className="stat-number">{preparingCount}</div>
           </div>
-          <div className="stat-card clickable" onClick={() => setStatusFilter('completed')}>
+          <div
+            className={`stat-card clickable ${showRevenueChart ? 'stat-card-active' : ''}`}
+            onClick={() => { setStatusFilter('completed'); setShowRevenueChart(v => !v); }}
+          >
             <h3>已完成營收</h3>
             <div className="stat-number">{formatPrice(completedRevenue)}</div>
             <span className="stat-sub">{dateRangeLabel}・{completedOrders.length} 筆（依完成日期）</span>
+            <span className="stat-sub stat-hint">{showRevenueChart ? '點擊收合圖表' : '點擊查看趨勢圖'}</span>
           </div>
         </div>
+
+        {showRevenueChart && (
+          <RevenueChart
+            points={completedOrders.map(o => ({ at: o.completed_at || o.updated_at, amount: o.total_amount }))}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onClose={() => setShowRevenueChart(false)}
+          />
+        )}
 
         <div className="orders-table">
           <div className="orders-toolbar">
