@@ -9,11 +9,20 @@ class OrderItemCreate(BaseModel):
     quantity: int
 
 
+class BrandInOrder(BaseModel):
+    id: str
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
 class ProductInOrder(BaseModel):
     id: str
     name: str
     main_image: Optional[str] = None
     description: Optional[str] = None
+    brand: Optional[BrandInOrder] = None  # 後台品牌營業額統計用（依商品目前所屬品牌）
 
     class Config:
         from_attributes = True

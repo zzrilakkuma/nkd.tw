@@ -11,6 +11,8 @@ type Granularity = 'day' | 'week' | 'month';
 
 interface Props {
   points: RevenuePoint[];
+  /** 標題（預設「已完成營收趨勢」） */
+  title?: string;
   /** YYYY-MM-DD，空字串代表不限 */
   dateFrom: string;
   dateTo: string;
@@ -68,7 +70,7 @@ const niceTicks = (max: number) => {
   return ticks;
 };
 
-const RevenueChart: React.FC<Props> = ({ points, dateFrom, dateTo, onClose }) => {
+const RevenueChart: React.FC<Props> = ({ points, title = '已完成營收趨勢', dateFrom, dateTo, onClose }) => {
   // 依區間長度自動選粒度；使用者可再手動切換
   const autoGranularity: Granularity = useMemo(() => {
     const times = points.map(p => new Date(p.at).getTime());
@@ -133,7 +135,7 @@ const RevenueChart: React.FC<Props> = ({ points, dateFrom, dateTo, onClose }) =>
     <div className="revenue-chart-card">
       <div className="revenue-chart-head">
         <div>
-          <h4>已完成營收趨勢</h4>
+          <h4>{title}</h4>
           <span className="revenue-chart-sub">
             合計 {formatPrice(total)}・{count} 筆・依完成日期
           </span>

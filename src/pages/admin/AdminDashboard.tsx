@@ -11,6 +11,7 @@ import AdminPickupLocations from './AdminPickupLocations';
 import AdminAuditLogs from './AdminAuditLogs';
 import AdminOrderDrawer from './AdminOrderDrawer';
 import RevenueChart from './RevenueChart';
+import BrandRevenue, { brandSharesOfOrder } from './BrandRevenue';
 import '../../styles/admin.css';
 import '../../styles/profile.css';
 
@@ -26,6 +27,7 @@ export interface ApiOrderItem {
     id: string;
     name: string;
     main_image?: string;
+    brand?: { id: string; name: string } | null;
   };
   sku?: {
     id: string;
@@ -95,6 +97,7 @@ const AdminDashboard: React.FC = () => {
   const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(1);
   const [showRevenueChart, setShowRevenueChart] = useState(false);
+  const [revenueBrand, setRevenueBrand] = useState<string | null>(null);
   const PAGE_SIZE = 20;
 
   // 篩選或搜尋改變時回到第 1 頁
@@ -312,6 +315,17 @@ const AdminDashboard: React.FC = () => {
   const preparingCount = rangeOrders.filter(o => o.status === 'preparing').length;
   const completedOrders = rangeOrders.filter(o => o.status === 'completed');
   const completedRevenue = completedOrders.reduce((total, o) => total + o.total_amount, 0);
+  // 趨勢圖：選了品牌就只畫該品牌在各訂單的營業額（區間內沒有該品牌時視同未選）
+  const revenueBrandName = revenueBrand
+    ? completedOrders.map(o => brandSharesOfOrder(o).get(revenueBrand)?.name).find(Boolean)
+    : undefined;
+  const activeRevenueBrand = revenueBrandName ? revenueBrand : null;
+  const revenuePoints = completedOrders.flatMap(o => {
+    const at = o.completed_at || o.updated_at;
+    if (!activeRevenueBrand) return [{ at, amount: o.total_amount }];
+    const share = brandSharesOfOrder(o).get(activeRevenueBrand);
+    return share ? [{ at, amount: share.amount }] : [];
+  });
 
   // 分頁
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE));
@@ -432,12 +446,20 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {showRevenueChart && (
-          <RevenueChart
-            points={completedOrders.map(o => ({ at: o.completed_at || o.updated_at, amount: o.total_amount }))}
-            dateFrom={dateFrom}
-            dateTo={dateTo}
-            onClose={() => setShowRevenueChart(false)}
-          />
+          <>
+            <RevenueChart
+              points={revenuePoints}
+              title={revenueBrandName ? `已完成營收趨勢・${revenueBrandName}` : undefined}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              onClose={() => setShowRevenueChart(false)}
+            />
+            <BrandRevenue
+              orders={completedOrders}
+              selectedBrand={activeRevenueBrand}
+              onSelect={setRevenueBrand}
+            />
+          </>
         )}
 
         <div className="orders-table">

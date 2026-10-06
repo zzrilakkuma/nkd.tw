@@ -433,3 +433,17 @@ class TestRollback:
         oid = make_order(sku["id"])["id"]
         res = client.post(f"/api/v1/orders/{oid}/rollback", headers=user_headers)
         assert res.status_code == 403
+
+
+class TestOrderItemBrand:
+    def test_admin_orders_include_item_brand(self, client, admin_headers, make_order):
+        bid = client.post("/api/v1/brands", headers=admin_headers, json={"name": "Tangiers"}).json()["id"]
+        product = client.post("/api/v1/products", headers=admin_headers, json={
+            "name": "品牌商品", "description": "測試用", "is_published": True, "brand_id": bid,
+            "skus": [{"flavor": "", "spec": "", "unit": "件", "price": 300, "stock": 5, "is_active": True}],
+        }).json()
+        oid = make_order(product["skus"][0]["id"])["id"]
+
+        orders = client.get("/api/v1/orders/admin/all", headers=admin_headers).json()
+        item = next(o for o in orders if o["id"] == oid)["items"][0]
+        assert item["product"]["brand"] == {"id": bid, "name": "Tangiers"}
