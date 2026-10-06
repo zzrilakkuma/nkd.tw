@@ -6,11 +6,12 @@
   - 月結核准（/verify，payment_type=monthly）：核對 → 準備出貨，直接實扣（不經付款流程）
   - 取消/逾期（實扣前）：reserved -= qty（釋放保留）
   - 取消（準備出貨後）：stock += qty（貨退回實體庫存）
+  - 退回上一步（/rollback）：準備出貨 → 前一步時撤銷實扣（stock += qty、reserved += qty）
 """
-from typing import Dict, Set
+from typing import Dict, Optional, Set
 from sqlalchemy.orm import Session
 
-from app.models.order import Order, OrderStatus
+from app.models.order import Order, OrderStatus, PaymentType
 from app.models.product import SKU
 
 
@@ -69,6 +70,26 @@ def commit_stock(db: Session, order: Order) -> None:
     for sku, qty in _each_sku(db, order):
         sku.stock = (sku.stock or 0) - qty
         sku.reserved = max(0, (sku.reserved or 0) - qty)
+
+
+def uncommit_stock(db: Session, order: Order) -> None:
+    """退回準備出貨前：撤銷實扣並恢復保留（commit_stock 的反向，可售量不變）。"""
+    for sku, qty in _each_sku(db, order):
+        sku.stock = (sku.stock or 0) + qty
+        sku.reserved = (sku.reserved or 0) + qty
+
+
+def previous_status(order: Order) -> Optional[OrderStatus]:
+    """管理員「退回上一步」的目標狀態；無法退回（等待核對/取消/逾期）回傳 None。"""
+    current = as_status(order.status)
+    if current == S.PREPARING and order.payment_type == PaymentType.MONTHLY.value:
+        return S.PENDING_REVIEW  # 月結不經付款流程，直接退回核對
+    return {
+        S.COMPLETED: S.PREPARING,
+        S.PREPARING: S.PENDING_CONFIRM,
+        S.PENDING_CONFIRM: S.PENDING_PAYMENT,
+        S.PENDING_PAYMENT: S.PENDING_REVIEW,
+    }.get(current)
 
 
 def return_stock(db: Session, order: Order) -> None:

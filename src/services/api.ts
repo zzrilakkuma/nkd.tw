@@ -220,6 +220,18 @@ export const ordersAPI = {
     return response.data;
   },
 
+  // 管理員：月結訂單核准後調整運費與折扣
+  adjustAmount: async (id: string, shipping_fee: number, discount = 0) => {
+    const response = await api.put(`/orders/${id}/amount`, { shipping_fee, discount });
+    return response.data;
+  },
+
+  // 管理員：退回上一步（不寄通知信）
+  rollback: async (id: string) => {
+    const response = await api.post(`/orders/${id}/rollback`);
+    return response.data;
+  },
+
   // 管理員：變更狀態（後端驗證合法轉換）
   changeStatus: async (id: string, status: string) => {
     const response = await api.put(`/orders/${id}/status`, { status });

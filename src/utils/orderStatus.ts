@@ -33,5 +33,17 @@ export const NEXT_STATUSES: Record<string, OrderStatus[]> = {
   expired: [],
 };
 
+// 管理員「退回上一步」的目標狀態（需與後端 order_state.previous_status 一致）
+export const previousStatus = (status: string, paymentType?: string): OrderStatus | null => {
+  if (status === 'preparing' && paymentType === 'monthly') return OrderStatus.PENDING_REVIEW;
+  const map: Record<string, OrderStatus> = {
+    completed: OrderStatus.PREPARING,
+    preparing: OrderStatus.PENDING_CONFIRM,
+    pending_confirm: OrderStatus.PENDING_PAYMENT,
+    pending_payment: OrderStatus.PENDING_REVIEW,
+  };
+  return map[status] || null;
+};
+
 export const statusText = (s: string) => ORDER_STATUS_TEXT[s] || s;
 export const statusClass = (s: string) => ORDER_STATUS_CLASS[s] || '';

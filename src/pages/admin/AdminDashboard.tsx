@@ -192,6 +192,32 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const rollbackOrder = async (orderId: string) => {
+    setUpdatingId(orderId);
+    try {
+      const updated = await ordersAPI.rollback(orderId);
+      setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, ...updated } : o)));
+      setSelectedOrder(prev => (prev?.id === orderId ? { ...prev, ...updated } : prev));
+    } catch (err: any) {
+      alert(err.response?.data?.detail || '退回失敗，請再試一次');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const adjustMonthlyAmount = async (orderId: string, shippingFee: number, discount: number) => {
+    setUpdatingId(orderId);
+    try {
+      const updated = await ordersAPI.adjustAmount(orderId, shippingFee, discount);
+      setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, ...updated } : o)));
+      setSelectedOrder(prev => (prev?.id === orderId ? { ...prev, ...updated } : prev));
+    } catch (err: any) {
+      alert(err.response?.data?.detail || '金額調整失敗，請再試一次');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const getStatusText = statusText;
   const getStatusClass = statusClass;
 
@@ -664,6 +690,8 @@ const AdminDashboard: React.FC = () => {
         onClose={() => setSelectedOrder(null)}
         onStatusChange={updateOrderStatus}
         onVerify={verifyOrder}
+        onAdjustAmount={adjustMonthlyAmount}
+        onRollback={rollbackOrder}
         onSaveNote={saveAdminNote}
         onUpdateItems={updateOrderItems}
         updatingId={updatingId}

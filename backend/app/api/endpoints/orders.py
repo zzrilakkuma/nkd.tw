@@ -10,7 +10,7 @@ from app.models.order import Order, OrderItem, OrderStatus, DeliveryMethod, Paym
 from app.models.product import Product, SKU
 from app.models.pickup_location import PickupLocation
 from app.models.user import User
-from app.schemas.order import OrderCreate, StatusChange, VerifyOrder, UpdateOrderItems, PaymentSubmit, OrderResponse, AdminOrderResponse, AdminNoteUpdate
+from app.schemas.order import OrderCreate, StatusChange, VerifyOrder, AdjustOrderAmount, UpdateOrderItems, PaymentSubmit, OrderResponse, AdminOrderResponse, AdminNoteUpdate
 from app.api.dependencies import get_current_user, get_current_admin_user
 from app.services.order_state import (
     can_transition,
@@ -18,6 +18,8 @@ from app.services.order_state import (
     apply_inventory_on_transition,
     release_reservation,
     commit_stock,
+    uncommit_stock,
+    previous_status,
 )
 from app.services.order_expiry import expire_overdue_orders, is_overdue
 from app.services.audit import log_action
@@ -395,6 +397,91 @@ def verify_order(
     db.commit()
     db.refresh(order)
     background_tasks.add_task(send_status_email, snapshot_order(order))
+    return order
+
+
+@router.post("/{order_id}/rollback", response_model=AdminOrderResponse)
+def rollback_order(
+    order_id: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin_user),
+):
+    """管理員將訂單退回上一步（可一路退回等待核對重新編輯），不寄通知信。"""
+    order = _get_order_or_404(db, order_id)
+    current = OrderStatus(order.status)
+    target = previous_status(order)
+    if target is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="此狀態無法退回")
+
+    before = {"status": current.value, "payment_info": order.payment_info,
+              "paid_at": order.paid_at.isoformat() if order.paid_at else None}
+
+    if current == OrderStatus.COMPLETED:
+        order.completed_at = None
+    elif current == OrderStatus.PREPARING:
+        uncommit_stock(db, order)
+    elif current == OrderStatus.PENDING_CONFIRM:
+        # 退回等待付款：清除客戶提交的付款資訊，重新給 48 小時付款期限
+        order.payment_info = None
+        order.paid_at = None
+        order.payment_deadline = datetime.utcnow() + timedelta(hours=settings.PAYMENT_DEADLINE_HOURS)
+
+    if target == OrderStatus.PENDING_REVIEW:
+        # 回到核對階段：解除金額鎖定，可再調整品項/折扣/運費
+        order.locked = False
+        order.payment_deadline = None
+
+    order.status = target.value
+    log_action(
+        db, admin, "ORDER_ROLLBACK", "order", order.id,
+        summary=f"訂單 #{order.id} 退回上一步：{current.value} → {target.value}",
+        before=before, after={"status": target.value},
+    )
+    db.commit()
+    db.refresh(order)
+    return order
+
+
+# 月結訂單核准後仍可調整金額的狀態
+_MONTHLY_AMOUNT_EDITABLE = {OrderStatus.PREPARING, OrderStatus.COMPLETED}
+
+
+@router.put("/{order_id}/amount", response_model=AdminOrderResponse)
+def adjust_monthly_amount(
+    order_id: str,
+    data: AdjustOrderAmount,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin_user),
+):
+    """月結訂單核准後調整運費/折扣（月底對帳用），總額依此重算。"""
+    order = _get_order_or_404(db, order_id)
+    if order.payment_type != PaymentType.MONTHLY.value:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="僅月結訂單可於核准後調整金額")
+    if OrderStatus(order.status) not in _MONTHLY_AMOUNT_EDITABLE:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="此狀態無法調整金額")
+    if data.shipping_fee < 0:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="運費不可為負數")
+    if data.discount < 0:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="折扣不可為負數")
+
+    before = {"shipping_fee": order.shipping_fee, "discount": order.discount,
+              "total_amount": order.total_amount}
+    order.shipping_fee = data.shipping_fee
+    order.discount = data.discount
+    recompute_totals(order)
+    after = {"shipping_fee": order.shipping_fee, "discount": order.discount,
+             "total_amount": order.total_amount}
+    if before == after:
+        return order
+
+    log_action(
+        db, admin, "ORDER_AMOUNT_ADJUST", "order", order.id,
+        summary=f"月結訂單 #{order.id} 調整金額：總額 {before['total_amount']:.0f} → {order.total_amount:.0f}"
+                f"（運費 {order.shipping_fee:.0f}、折扣 {order.discount:.0f}）",
+        before=before, after=after,
+    )
+    db.commit()
+    db.refresh(order)
     return order
 
 

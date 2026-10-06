@@ -117,6 +117,38 @@ class TestVerifyAndTransitions:
         fresh = get_sku(client, product["id"], sku["id"])
         assert (fresh["stock"], fresh["reserved"], fresh["available"]) == (10, 0, 10)
 
+    def test_monthly_amount_adjustable_after_approval(self, client, admin_headers,
+                                                       make_product, make_order):
+        _, sku = make_product(price=500, stock=10)
+        order = make_order(sku["id"], quantity=2)
+        client.post(f"/api/v1/orders/{order['id']}/verify", headers=admin_headers,
+                    json={"shipping_fee": 100, "payment_type": "monthly"})
+
+        res = client.put(f"/api/v1/orders/{order['id']}/amount", headers=admin_headers,
+                         json={"shipping_fee": 0, "discount": 200})
+        assert res.status_code == 200
+        body = res.json()
+        assert body["status"] == "preparing"
+        assert (body["shipping_fee"], body["discount"], body["total_amount"]) == (0, 200, 800)
+
+        # 完成後仍可調整
+        client.put(f"/api/v1/orders/{order['id']}/status", headers=admin_headers,
+                   json={"status": "completed"})
+        res = client.put(f"/api/v1/orders/{order['id']}/amount", headers=admin_headers,
+                         json={"shipping_fee": 50, "discount": 0})
+        assert res.status_code == 200
+        assert res.json()["total_amount"] == 1050
+
+    def test_amount_adjust_rejected_for_normal_order(self, client, admin_headers,
+                                                     make_product, make_order):
+        _, sku = make_product()
+        order = make_order(sku["id"])
+        client.post(f"/api/v1/orders/{order['id']}/verify", headers=admin_headers,
+                    json={"shipping_fee": 100})
+        res = client.put(f"/api/v1/orders/{order['id']}/amount", headers=admin_headers,
+                         json={"shipping_fee": 0, "discount": 0})
+        assert res.status_code == 400
+
     def test_review_to_payment_must_use_verify(self, client, admin_headers, make_product, make_order):
         _, sku = make_product()
         order = make_order(sku["id"])
@@ -320,4 +352,84 @@ class TestV12InvoiceDiscountItems:
         res = client.put(f"/api/v1/orders/{order['id']}/items", headers=user_headers, json={
             "items": [{"sku_id": sku["id"], "quantity": 5}],
         })
+        assert res.status_code == 403
+
+
+class TestRollback:
+    """管理員退回上一步：一步一步退回等待核對，庫存帳務需正確還原。"""
+
+    def _rollback(self, client, admin_headers, oid):
+        return client.post(f"/api/v1/orders/{oid}/rollback", headers=admin_headers)
+
+    def test_normal_order_rolls_back_step_by_step(self, client, admin_headers, user_headers,
+                                                  make_product, make_order):
+        product, sku = make_product(price=500, stock=10)
+        oid = make_order(sku["id"], quantity=2)["id"]
+        client.post(f"/api/v1/orders/{oid}/verify", headers=admin_headers, json={"shipping_fee": 100})
+        client.post(f"/api/v1/orders/{oid}/pay", headers=user_headers, json={"last5Digits": "12345"})
+        for s in ("preparing", "completed"):
+            client.put(f"/api/v1/orders/{oid}/status", headers=admin_headers, json={"status": s})
+
+        res = self._rollback(client, admin_headers, oid)
+        assert res.status_code == 200
+        assert res.json()["status"] == "preparing"
+        assert res.json()["completed_at"] is None
+
+        res = self._rollback(client, admin_headers, oid)
+        assert res.json()["status"] == "pending_confirm"
+        fresh = get_sku(client, product["id"], sku["id"])
+        assert (fresh["stock"], fresh["reserved"], fresh["available"]) == (10, 2, 8)
+
+        res = self._rollback(client, admin_headers, oid)
+        body = res.json()
+        assert body["status"] == "pending_payment"
+        assert body["payment_info"] is None and body["paid_at"] is None
+        assert body["payment_deadline"] is not None
+
+        res = self._rollback(client, admin_headers, oid)
+        body = res.json()
+        assert body["status"] == "pending_review"
+        assert body["locked"] is False and body["payment_deadline"] is None
+
+        # 退回核對後可再調整品項與金額
+        res = client.put(f"/api/v1/orders/{oid}/items", headers=admin_headers, json={
+            "items": [{"sku_id": sku["id"], "quantity": 3}], "discount": 100,
+        })
+        assert res.status_code == 200
+        assert res.json()["total_amount"] == 1500   # 1500 - 折扣 100 + 運費 100
+        fresh = get_sku(client, product["id"], sku["id"])
+        assert (fresh["stock"], fresh["reserved"], fresh["available"]) == (10, 3, 7)
+
+    def test_monthly_order_rolls_back_to_review(self, client, admin_headers, make_product, make_order):
+        product, sku = make_product(price=500, stock=10)
+        oid = make_order(sku["id"], quantity=2)["id"]
+        client.post(f"/api/v1/orders/{oid}/verify", headers=admin_headers,
+                    json={"shipping_fee": 0, "payment_type": "monthly"})
+
+        res = self._rollback(client, admin_headers, oid)
+        body = res.json()
+        assert body["status"] == "pending_review"
+        assert body["locked"] is False
+        assert body["payment_type"] == "monthly"
+        fresh = get_sku(client, product["id"], sku["id"])
+        assert (fresh["stock"], fresh["reserved"], fresh["available"]) == (10, 2, 8)
+
+        # 可重新月結核准並再次實扣
+        client.post(f"/api/v1/orders/{oid}/verify", headers=admin_headers,
+                    json={"shipping_fee": 0, "payment_type": "monthly"})
+        fresh = get_sku(client, product["id"], sku["id"])
+        assert (fresh["stock"], fresh["reserved"], fresh["available"]) == (8, 0, 8)
+
+    def test_rollback_rejected_for_review_and_cancelled(self, client, admin_headers,
+                                                        make_product, make_order):
+        _, sku = make_product()
+        oid = make_order(sku["id"])["id"]
+        assert self._rollback(client, admin_headers, oid).status_code == 400
+        client.put(f"/api/v1/orders/{oid}/status", headers=admin_headers, json={"status": "cancelled"})
+        assert self._rollback(client, admin_headers, oid).status_code == 400
+
+    def test_rollback_requires_admin(self, client, user_headers, make_product, make_order):
+        _, sku = make_product()
+        oid = make_order(sku["id"])["id"]
+        res = client.post(f"/api/v1/orders/{oid}/rollback", headers=user_headers)
         assert res.status_code == 403

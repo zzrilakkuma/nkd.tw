@@ -77,6 +77,12 @@ class VerifyOrder(BaseModel):
     payment_type: PaymentType = PaymentType.NORMAL
 
 
+class AdjustOrderAmount(BaseModel):
+    """管理員調整月結訂單金額（核准後仍可修改運費/折扣）"""
+    shipping_fee: float
+    discount: float = 0
+
+
 class UpdateOrderItems(BaseModel):
     """管理員於等待核對階段調整品項/數量"""
     items: List[OrderItemCreate]

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { OrderStatus } from '../../types';
 import { formatPrice, formatDate } from '../../utils';
-import { statusText as STATUS_TEXT_FN, statusClass as STATUS_CLASS_FN, NEXT_STATUSES } from '../../utils/orderStatus';
+import { statusText as STATUS_TEXT_FN, statusClass as STATUS_CLASS_FN, NEXT_STATUSES, previousStatus } from '../../utils/orderStatus';
 import { deliveryLabel } from '../../utils/delivery';
 import { ApiOrder } from './AdminDashboard';
 
@@ -10,6 +10,8 @@ interface Props {
   onClose: () => void;
   onStatusChange: (orderId: string, status: OrderStatus) => Promise<void>;
   onVerify: (orderId: string, shippingFee: number, discount?: number, paymentType?: 'normal' | 'monthly') => Promise<void>;
+  onRollback: (orderId: string) => Promise<void>;
+  onAdjustAmount: (orderId: string, shippingFee: number, discount: number) => Promise<void>;
   onUpdateItems: (
     orderId: string,
     items: Array<{ sku_id: string; quantity: number }>,
@@ -43,7 +45,7 @@ interface EditItem {
   quantity: number;
 }
 
-const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onVerify, onUpdateItems, onSaveNote, updatingId }) => {
+const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onVerify, onRollback, onAdjustAmount, onUpdateItems, onSaveNote, updatingId }) => {
   const [feeInput, setFeeInput] = useState<string>('');
   const [discountInput, setDiscountInput] = useState<string>('0');
   const [isMonthly, setIsMonthly] = useState(false);
@@ -69,7 +71,7 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
           }))
       );
     }
-  }, [order?.id, order?.items]); // eslint-disable-line
+  }, [order?.id, order?.items, order?.shipping_fee, order?.discount]); // eslint-disable-line
 
   // ESC 關閉
   useEffect(() => {
@@ -91,6 +93,33 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
   const currentStepIndex = steps.indexOf(order.status as OrderStatus);
   const isCancelled = order.status === OrderStatus.CANCELLED || order.status === OrderStatus.EXPIRED;
   const nextStatuses = NEXT_STATUSES[order.status] || [];
+  const prevStatus = previousStatus(order.status, order.payment_type);
+  const confirmRollback = () => {
+    if (!prevStatus) return;
+    let msg = `確認將訂單退回「${STATUS_TEXT_FN(prevStatus)}」？（不會通知客戶）`;
+    if (order.status === OrderStatus.PREPARING) msg += '\n已扣除的庫存會恢復為保留狀態。';
+    if (order.status === OrderStatus.PENDING_CONFIRM) msg += '\n客戶提交的付款末五碼將被清除，並重新給予付款期限。';
+    if (prevStatus === OrderStatus.PENDING_REVIEW) msg += '\n退回後可重新編輯品項、折扣與運費。';
+    if (window.confirm(msg)) onRollback(order.id);
+  };
+  const rollbackButton = prevStatus && (
+    <button
+      className="btn-edit"
+      disabled={updatingId === order.id}
+      onClick={confirmRollback}
+    >
+      ↩ 退回上一步（{STATUS_TEXT_FN(prevStatus)}）
+    </button>
+  );
+  // 月結訂單核准後（準備出貨/已完成）仍可調整金額，供月底對帳
+  const canAdjustMonthlyAmount = order.payment_type === 'monthly'
+    && (order.status === OrderStatus.PREPARING || order.status === OrderStatus.COMPLETED);
+  const feePreview = parseFloat(feeInput);
+  const discountPreview = parseFloat(discountInput);
+  const totalPreview = Math.max(0, order.subtotal - (isNaN(discountPreview) ? 0 : discountPreview))
+    + (isNaN(feePreview) ? 0 : feePreview);
+  const amountDirty = feeInput !== String(order.shipping_fee ?? 0)
+    || discountInput !== String(order.discount ?? 0);
 
   return (
     <>
@@ -304,6 +333,54 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
             </div>
           </div>
 
+          {/* 月結金額調整（核准後） */}
+          {canAdjustMonthlyAmount && (
+            <div className="drawer-section">
+              <h4>調整月結金額</h4>
+              <p className="delivery-note-hint">月結訂單核准後仍可修改運費與折扣，總額將依此重新計算。</p>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <div className="form-group" style={{ maxWidth: 160 }}>
+                  <label>折扣（TWD）</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={discountInput}
+                    onChange={e => setDiscountInput(e.target.value)}
+                  />
+                </div>
+                <div className="form-group" style={{ maxWidth: 160 }}>
+                  <label>運費（TWD）</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={feeInput}
+                    onChange={e => setFeeInput(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  className="btn-save"
+                  disabled={updatingId === order.id || !amountDirty}
+                  onClick={() => {
+                    const fee = parseFloat(feeInput);
+                    const d = parseFloat(discountInput);
+                    if (isNaN(fee) || fee < 0) { alert('請輸入有效運費'); return; }
+                    if (isNaN(d) || d < 0) { alert('請輸入有效折扣（可為 0）'); return; }
+                    if (!window.confirm(`確認將月結訂單總額調整為 ${formatPrice(totalPreview)}？`)) return;
+                    onAdjustAmount(order.id, fee, d);
+                  }}
+                >
+                  儲存金額
+                </button>
+                {amountDirty && (
+                  <span className="info-empty">調整後總額：{formatPrice(totalPreview)}</span>
+                )}
+                {updatingId === order.id && <span className="updating-label">更新中...</span>}
+              </div>
+            </div>
+          )}
+
           {/* 付款資訊 */}
           {order.payment_info && (
             <div className="drawer-section">
@@ -330,7 +407,7 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
               <div>
                 <p className="delivery-note-hint">
                   與客戶確認後可於此調整品項數量與折扣，再輸入實際運費並點「核對完成」。
-                  核對完成後金額鎖定並進入等待付款。
+                  核對完成後金額鎖定並進入等待付款（月結則直接進入準備出貨）。
                 </p>
 
                 {/* 品項調整 */}
@@ -448,7 +525,7 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
                   {updatingId === order.id && <span className="updating-label">更新中...</span>}
                 </div>
               </div>
-            ) : nextStatuses.length === 0 ? (
+            ) : nextStatuses.length === 0 && !rollbackButton ? (
               <p className="updating-label">此訂單已結束，無可用操作。</p>
             ) : (
               <div className="drawer-status-action" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -467,6 +544,7 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
                       : STATUS_TEXT_FN(s)}
                   </button>
                 ))}
+                {rollbackButton}
                 {updatingId === order.id && <span className="updating-label">更新中...</span>}
               </div>
             )}
