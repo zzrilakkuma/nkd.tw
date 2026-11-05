@@ -1,0 +1,33 @@
+# Caddy 會自動申請並續期 Let's Encrypt 憑證
+{
+	email {$ACME_EMAIL}
+}
+
+# www 轉到裸網域
+www.{$SITE_DOMAIN} {
+	redir https://{$SITE_DOMAIN}{uri} permanent
+}
+
+# 前端（React build）
+{$SITE_DOMAIN} {
+	encode gzip zstd
+	reverse_proxy web:3000
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options SAMEORIGIN
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+}
+
+# 後端 API
+{$API_DOMAIN} {
+	encode gzip zstd
+	reverse_proxy api:8000 {
+		header_up X-Real-IP {remote_host}
+	}
+	# 圖片上傳上限 3MB，多留一點給 multipart
+	request_body {
+		max_size 5MB
+	}
+}
