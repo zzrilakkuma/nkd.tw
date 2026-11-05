@@ -323,6 +323,12 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
                 <span>-{formatPrice(order.discount)}</span>
               </div>
             )}
+            {order.discount < 0 && (
+              <div className="order-total-row" style={{ fontWeight: 400, fontSize: 14, color: '#f6ad55' }}>
+                <span>加價</span>
+                <span>+{formatPrice(-order.discount)}</span>
+              </div>
+            )}
             <div className="order-total-row" style={{ fontWeight: 400, fontSize: 14 }}>
               <span>運費</span>
               <span>{formatPrice(order.shipping_fee)}</span>
@@ -337,13 +343,12 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
           {canAdjustMonthlyAmount && (
             <div className="drawer-section">
               <h4>調整月結金額</h4>
-              <p className="delivery-note-hint">月結訂單核准後仍可修改運費與折扣，總額將依此重新計算。</p>
+              <p className="delivery-note-hint">月結訂單核准後仍可修改運費與折扣（折扣填負數即加價），總額將依此重新計算。</p>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 <div className="form-group" style={{ maxWidth: 160 }}>
-                  <label>折扣（TWD）</label>
+                  <label>折扣（TWD，負數＝加價）</label>
                   <input
                     type="number"
-                    min="0"
                     value={discountInput}
                     onChange={e => setDiscountInput(e.target.value)}
                   />
@@ -366,7 +371,7 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
                     const fee = parseFloat(feeInput);
                     const d = parseFloat(discountInput);
                     if (isNaN(fee) || fee < 0) { alert('請輸入有效運費'); return; }
-                    if (isNaN(d) || d < 0) { alert('請輸入有效折扣（可為 0）'); return; }
+                    if (isNaN(d)) { alert('請輸入有效折扣（可為 0，負數為加價）'); return; }
                     if (!window.confirm(`確認將月結訂單總額調整為 ${formatPrice(totalPreview)}？`)) return;
                     onAdjustAmount(order.id, fee, d);
                   }}
@@ -458,7 +463,7 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
                         onUpdateItems(
                           order.id,
                           editItems.map(x => ({ sku_id: x.sku_id, quantity: x.quantity })),
-                          isNaN(d) ? undefined : Math.max(0, d),
+                          isNaN(d) ? undefined : d,
                         );
                       }}
                     >
@@ -470,10 +475,9 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
                 {/* 折扣 + 運費 */}
                 <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                   <div className="form-group" style={{ maxWidth: 160 }}>
-                    <label>折扣（TWD）</label>
+                    <label>折扣（TWD，負數＝加價）</label>
                     <input
                       type="number"
-                      min="0"
                       value={discountInput}
                       onChange={e => setDiscountInput(e.target.value)}
                     />
@@ -508,7 +512,7 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
                       const fee = parseFloat(feeInput);
                       const d = parseFloat(discountInput);
                       if (isNaN(fee) || fee < 0) { alert('請輸入有效運費'); return; }
-                      if (isNaN(d) || d < 0) { alert('請輸入有效折扣（可為 0）'); return; }
+                      if (isNaN(d)) { alert('請輸入有效折扣（可為 0，負數為加價）'); return; }
                       if (isMonthly && !window.confirm('確認以「月結」核准此訂單？\n訂單將視同已付款、立即扣除庫存並進入準備出貨。')) return;
                       onVerify(order.id, fee, d, isMonthly ? 'monthly' : 'normal');
                     }}

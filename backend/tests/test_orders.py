@@ -447,3 +447,27 @@ class TestOrderItemBrand:
         orders = client.get("/api/v1/orders/admin/all", headers=admin_headers).json()
         item = next(o for o in orders if o["id"] == oid)["items"][0]
         assert item["product"]["brand"] == {"id": bid, "name": "Tangiers"}
+
+
+class TestNegativeDiscount:
+    """折扣可為負數＝加價。"""
+
+    def test_negative_discount_adds_to_total(self, client, admin_headers, make_product, make_order):
+        _, sku = make_product(price=500, stock=10)
+        oid = make_order(sku["id"], quantity=2)["id"]
+
+        res = client.put(f"/api/v1/orders/{oid}/items", headers=admin_headers, json={
+            "items": [{"sku_id": sku["id"], "quantity": 2}], "discount": -50,
+        })
+        assert res.status_code == 200
+        assert res.json()["discount"] == -50
+
+        res = client.post(f"/api/v1/orders/{oid}/verify", headers=admin_headers,
+                          json={"shipping_fee": 100, "discount": -200, "payment_type": "monthly"})
+        assert res.status_code == 200
+        assert res.json()["total_amount"] == 1300   # 1000 + 加價 200 + 運費 100
+
+        res = client.put(f"/api/v1/orders/{oid}/amount", headers=admin_headers,
+                         json={"shipping_fee": 0, "discount": -300})
+        assert res.status_code == 200
+        assert res.json()["total_amount"] == 1300   # 1000 + 加價 300

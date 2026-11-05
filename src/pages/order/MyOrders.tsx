@@ -358,6 +358,9 @@ const MyOrders: React.FC = () => {
                           {(order.discount ?? 0) > 0 && (
                             <p style={{ color: '#9ae6b4' }}><span>折扣</span><span>-{formatPrice(order.discount ?? 0)}</span></p>
                           )}
+                          {(order.discount ?? 0) < 0 && (
+                            <p style={{ color: '#f6ad55' }}><span>加價</span><span>+{formatPrice(-(order.discount ?? 0))}</span></p>
+                          )}
                           <p><span>運費</span><span>{order.status === 'pending_review' ? '待核對' : formatPrice(order.shippingFee ?? 0)}</span></p>
                           <p className="mo-amount-final"><span>應付金額</span><span>{order.status === 'pending_review' ? '核對後確認' : formatPrice(order.totalAmount)}</span></p>
                         </div>

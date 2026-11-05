@@ -100,9 +100,11 @@ def _render_customer_html(snap: dict, status: str, intro: str) -> str:
             f"<p style='color:#b8860b;font-weight:bold'>付款期限：{snap['payment_deadline']}，"
             "逾期訂單將自動取消。</p>"
         )
+    # 折扣為負數時顯示為加價
+    discount_label, discount_sign = ("折扣", "-") if snap["discount"] > 0 else ("加價", "+")
     discount_html = (
-        f"<tr><td colspan='2' style='padding:4px 12px;text-align:right'>折扣</td>"
-        f"<td style='padding:4px 12px;text-align:right'>-NT$ {snap['discount']:,.0f}</td></tr>"
+        f"<tr><td colspan='2' style='padding:4px 12px;text-align:right'>{discount_label}</td>"
+        f"<td style='padding:4px 12px;text-align:right'>{discount_sign}NT$ {abs(snap['discount']):,.0f}</td></tr>"
         if snap["discount"] else ""
     )
     return f"""

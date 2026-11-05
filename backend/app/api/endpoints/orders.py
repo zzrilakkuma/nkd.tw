@@ -321,9 +321,8 @@ def update_order_items(
         sku.reserved = (sku.reserved or 0) + item_data.quantity
 
     # 3) 折扣（可選）+ 重算
+    # 折扣可為負數（負數＝加價）
     if data.discount is not None:
-        if data.discount < 0:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="折扣不可為負數")
         order.discount = data.discount
     recompute_totals(order)
 
@@ -360,9 +359,7 @@ def verify_order(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="僅能在「等待核對」階段核對完成")
     if data.shipping_fee < 0:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="運費不可為負數")
-
-    if data.discount < 0:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="折扣不可為負數")
+    # 折扣可為負數（負數＝加價）
 
     old_fee = order.shipping_fee
     old_discount = order.discount
@@ -461,8 +458,6 @@ def adjust_monthly_amount(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="此狀態無法調整金額")
     if data.shipping_fee < 0:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="運費不可為負數")
-    if data.discount < 0:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="折扣不可為負數")
 
     before = {"shipping_fee": order.shipping_fee, "discount": order.discount,
               "total_amount": order.total_amount}
