@@ -98,7 +98,7 @@ const AdminOrderDrawer: React.FC<Props> = ({ order, onClose, onStatusChange, onV
     if (!prevStatus) return;
     let msg = `確認將訂單退回「${STATUS_TEXT_FN(prevStatus)}」？（不會通知客戶）`;
     if (order.status === OrderStatus.PREPARING) msg += '\n已扣除的庫存會恢復為保留狀態。';
-    if (order.status === OrderStatus.PENDING_CONFIRM) msg += '\n客戶提交的付款末五碼將被清除，並重新給予付款期限。';
+    if (order.status === OrderStatus.PENDING_CONFIRM) msg += '\n客戶提交的付款末五碼將被清除。';
     if (prevStatus === OrderStatus.PENDING_REVIEW) msg += '\n退回後可重新編輯品項、折扣與運費。';
     if (window.confirm(msg)) onRollback(order.id);
   };

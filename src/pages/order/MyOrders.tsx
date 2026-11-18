@@ -94,17 +94,6 @@ const MyOrders: React.FC = () => {
   const getStatusText = statusText;
   const getStatusClass = statusClass;
 
-  // 後端存 UTC（無時區字尾），補 Z 再換算剩餘時間
-  const remainingText = (deadline?: string | null): string | null => {
-    if (!deadline) return null;
-    const iso = /Z$|[+-]\d{2}:?\d{2}$/.test(deadline) ? deadline : deadline + 'Z';
-    const ms = new Date(iso).getTime() - Date.now();
-    if (ms <= 0) return '已逾期';
-    const h = Math.floor(ms / 3600000);
-    const m = Math.floor((ms % 3600000) / 60000);
-    return h > 0 ? `剩 ${h} 小時 ${m} 分` : `剩 ${m} 分`;
-  };
-
   // 進度條（正常流程）
   const PROGRESS_STEPS = ['pending_review', 'pending_payment', 'pending_confirm', 'preparing', 'completed'];
   const PROGRESS_LABELS = ['核對', '付款', '入帳確認', '出貨', '完成'];
@@ -137,14 +126,8 @@ const MyOrders: React.FC = () => {
     switch (order.status) {
       case 'pending_review':
         return { icon: '🔎', text: '等待店家核對訂單與運費，核對完成後才需付款', tone: 'info' };
-      case 'pending_payment': {
-        const remain = remainingText(order.paymentDeadline);
-        return {
-          icon: '💳',
-          text: <>已核對完成，請於 48 小時內完成轉帳付款{remain && <strong>（{remain}）</strong>}</>,
-          tone: 'warn',
-        };
-      }
+      case 'pending_payment':
+        return { icon: '💳', text: '已核對完成，請完成轉帳付款', tone: 'warn' };
       case 'pending_confirm':
         return { icon: '⏳', text: '付款資訊已提交，等待店家確認入帳', tone: 'info' };
       case 'preparing':

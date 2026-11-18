@@ -21,9 +21,7 @@ class Settings(BaseSettings):
     # CORS - 支援逗號分隔的多個 origin，例如 "https://nkd.tw,https://www.nkd.tw"
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
-    # 付款期限（小時）：核對完成進入「等待付款」後開始倒數，逾期自動取消
-    PAYMENT_DEADLINE_HOURS: int = int(os.getenv("PAYMENT_DEADLINE_HOURS", "48"))
-    # 逾期掃描間隔（秒）
+    # 背景排程間隔（秒）：清理過期操作紀錄
     EXPIRY_SWEEP_INTERVAL_SECONDS: int = int(os.getenv("EXPIRY_SWEEP_INTERVAL_SECONDS", "600"))
 
     # Email 通知（Resend）：未設定 RESEND_API_KEY 時自動停用寄信

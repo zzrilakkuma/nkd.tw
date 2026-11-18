@@ -1,7 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
 
 from app.core.database import get_db
@@ -21,7 +21,6 @@ from app.services.order_state import (
     uncommit_stock,
     previous_status,
 )
-from app.services.order_expiry import expire_overdue_orders, is_overdue
 from app.services.audit import log_action
 from app.services.email_notify import snapshot_order, send_status_email
 
@@ -211,21 +210,12 @@ def submit_payment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """客戶提交付款：等待付款 → 等待入帳確認（提交後停止 48h 倒數）"""
+    """客戶提交付款：等待付款 → 等待入帳確認"""
     order = _get_order_or_404(db, order_id)
     if order.user_id != current_user.id and not current_user.is_admin:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail="權限不足")
     if OrderStatus(order.status) != OrderStatus.PENDING_PAYMENT:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="此訂單目前無法提交付款")
-
-    # 惰性逾期檢查：已超過付款期限則直接標記逾期並釋放庫存
-    if is_overdue(order):
-        apply_inventory_on_transition(db, order, OrderStatus.PENDING_PAYMENT, OrderStatus.EXPIRED)
-        order.status = OrderStatus.EXPIRED.value
-        db.commit()
-        # HTTPException 回應不會執行 background tasks，逾期通知信直接同步寄出
-        send_status_email(snapshot_order(order))
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="此訂單已超過付款期限，已自動取消")
 
     order.status = OrderStatus.PENDING_CONFIRM.value
     order.paid_at = datetime.utcnow()
@@ -351,7 +341,7 @@ def verify_order(
 ):
     """管理員核對完成：輸入運費、鎖定金額。
 
-    一般付款：等待核對 → 等待付款（48h 倒數）
+    一般付款：等待核對 → 等待付款
     月結核准：等待核對 → 準備出貨（視同已付款，立即實扣庫存）
     """
     order = _get_order_or_404(db, order_id)
@@ -382,8 +372,6 @@ def verify_order(
         )
     else:
         order.status = OrderStatus.PENDING_PAYMENT.value
-        # 進入等待付款：開始 48 小時倒數
-        order.payment_deadline = datetime.utcnow() + timedelta(hours=settings.PAYMENT_DEADLINE_HOURS)
         log_action(
             db, admin, "ORDER_VERIFY", "order", order.id,
             summary=f"核對完成 #{order.id}：運費 {data.shipping_fee:.0f}、折扣 {data.discount:.0f}、總額 {order.total_amount:.0f}，進入等待付款",
@@ -418,10 +406,9 @@ def rollback_order(
     elif current == OrderStatus.PREPARING:
         uncommit_stock(db, order)
     elif current == OrderStatus.PENDING_CONFIRM:
-        # 退回等待付款：清除客戶提交的付款資訊，重新給 48 小時付款期限
+        # 退回等待付款：清除客戶提交的付款資訊
         order.payment_info = None
         order.paid_at = None
-        order.payment_deadline = datetime.utcnow() + timedelta(hours=settings.PAYMENT_DEADLINE_HOURS)
 
     if target == OrderStatus.PENDING_REVIEW:
         # 回到核對階段：解除金額鎖定，可再調整品項/折扣/運費

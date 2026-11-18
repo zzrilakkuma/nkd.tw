@@ -1,7 +1,7 @@
 """訂單 Email 通知（Resend）。
 
 設計原則：
-  - 寄信一律走 FastAPI BackgroundTasks（或逾期掃描的背景執行緒），不阻塞 API 回應。
+  - 寄信一律走 FastAPI BackgroundTasks，不阻塞 API 回應。
   - 寄信失敗只記 log，絕不影響訂單流程。
   - 信件內容在 DB session 仍開啟時先快照成 dict，背景執行時不再碰 ORM。
 """
@@ -45,7 +45,7 @@ _STATUS_MESSAGES = {
     ),
     OrderStatus.EXPIRED.value: (
         "訂單已逾期取消",
-        "由於超過付款期限，您的訂單已自動取消。如仍需訂購，請重新下單，或回覆此信與我們聯繫。",
+        "由於超過付款期限，您的訂單已取消。如仍需訂購，請重新下單，或回覆此信與我們聯繫。",
     ),
 }
 
@@ -77,7 +77,6 @@ def snapshot_order(order: Order) -> dict:
         "discount": order.discount or 0,
         "shipping_fee": order.shipping_fee or 0,
         "total_amount": order.total_amount or 0,
-        "payment_deadline": order.payment_deadline.strftime("%Y-%m-%d %H:%M（UTC）") if order.payment_deadline else None,
         "payment_last5": (order.payment_info or {}).get("last5Digits"),
         "items": items,
     }
@@ -94,12 +93,6 @@ def _render_customer_html(snap: dict, status: str, intro: str) -> str:
         f"<td style='padding:6px 12px;border-bottom:1px solid #eee;text-align:right'>NT$ {i['price']:,.0f}</td></tr>"
         for i in snap["items"]
     )
-    deadline_html = ""
-    if status == OrderStatus.PENDING_PAYMENT.value and snap.get("payment_deadline"):
-        deadline_html = (
-            f"<p style='color:#b8860b;font-weight:bold'>付款期限：{snap['payment_deadline']}，"
-            "逾期訂單將自動取消。</p>"
-        )
     # 折扣為負數時顯示為加價
     discount_label, discount_sign = ("折扣", "-") if snap["discount"] > 0 else ("加價", "+")
     discount_html = (
@@ -115,7 +108,6 @@ def _render_customer_html(snap: dict, status: str, intro: str) -> str:
   <div style="border:1px solid #eee;border-top:none;padding:24px;border-radius:0 0 8px 8px">
     <p>{snap['customer_name'] or '您好'}，</p>
     <p>{intro}</p>
-    {deadline_html}
     <p style="margin-bottom:4px"><strong>訂單編號：</strong>{snap['id']}　<strong>配送方式：</strong>{snap['delivery_method']}</p>
     <table style="border-collapse:collapse;width:100%;font-size:14px">
       <tr style="background:#f7f7f7">
