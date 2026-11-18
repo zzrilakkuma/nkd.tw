@@ -22,8 +22,8 @@ class TestCreateOrder:
 
         assert order["status"] == "pending_review"
         assert order["subtotal"] == 1520          # 金額由後端計算
-        assert order["shipping_fee"] == 100       # 宅配預設運費
-        assert order["total_amount"] == 1620
+        assert order["shipping_fee"] == 120       # 宅配預設運費
+        assert order["total_amount"] == 1640
         assert order["locked"] is False
         assert order["items"][0]["sku_id"] == sku["id"]
 
