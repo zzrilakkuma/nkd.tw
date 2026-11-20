@@ -15,7 +15,9 @@ Caddy :443（自動 HTTPS）
 | `.env.example` | 環境變數範本，複製成 `.env`（不進 git） |
 | `deploy.sh` | 更新程式碼、重新 build、重啟 |
 | `backup.sh` | 每日 pg_dump，保留 14 天 |
-| `restore.sh` | 從 dump 還原（搬家與災難復原用） |
+| `restore.sh` | 從 dump 還原（災難復原用） |
+| `migrate-from-zeabur.sh` | 從 Zeabur 匯出並還原（正式切換用） |
+| `Caddyfile.api-only` | 預演用，只開放 API 網域 |
 
 ---
 
@@ -34,7 +36,7 @@ timedatectl set-timezone Asia/Taipei
 docker --version && docker compose version
 ```
 
-## 2. DNS（ix1000）
+## 2. DNS（Cloudmax，名稱伺服器為 ix1000）
 
 切換前先做，不影響舊站：
 
@@ -44,7 +46,7 @@ docker --version && docker compose version
 | `@` | A | VPS IP | **切換當天**才改 |
 | `www` | A / CNAME | VPS IP / `nkd.tw` | **切換當天**才改 |
 
-切換前一天把 `@` 與 `www` 的 TTL 降到 300。
+Cloudmax 的 TTL 只有 10 分鐘與 240 分鐘兩種，請確認 `@` 是 10 分鐘。
 
 ## 3. 放上程式碼與設定
 
@@ -56,7 +58,7 @@ cp .env.example .env
 nano .env   # 填 ACME_EMAIL、POSTGRES_PASSWORD、SECRET_KEY、RESEND_API_KEY 等
 ```
 
-`SECRET_KEY` 沿用 Zeabur 上的值可保留現有登入；`POSTGRES_VERSION` 請設成與 Zeabur PostgreSQL 相同的 major 版本（在 Zeabur 容器執行 `psql --version` 可查）。
+`SECRET_KEY` 沿用 Zeabur 上的值可保留現有登入；`POSTGRES_VERSION` 預設 18，與 Zeabur 上的 PostgreSQL 版本一致；compose 的資料卷掛載方式僅適用 18 以上。
 
 ## 4. 第一次啟動
 
@@ -70,39 +72,40 @@ docker compose -f docker-compose.prod.yml logs -f api   # 看到 Uvicorn running
 
 ## 5. 從 Zeabur 搬資料庫
 
-在本機（需 `pg_dump`，版本 ≥ Zeabur 的 PostgreSQL）：
-
-```bash
-pg_dump "<Zeabur 的外部 DATABASE_URL>" -Fc -f hookah_store-zeabur.dump
-scp hookah_store-zeabur.dump root@<VPS IP>:/opt/hookah-store/deploy/backups/
-```
-
-在 VPS：
+在 VPS 執行（會提示輸入 Zeabur PostgreSQL 的密碼）：
 
 ```bash
 cd /opt/hookah-store/deploy
-./restore.sh backups/hookah_store-zeabur.dump
-docker compose -f docker-compose.prod.yml logs --tail=50 api
+./migrate-from-zeabur.sh
 ```
 
-確認日誌裡 migration 完成、seed 顯示「已有資料，略過」。
+腳本會用同版本的 `pg_dump` 直接從 Zeabur 的公網位址匯出、停 API、還原、再啟動 API，最後印出訂單、使用者、圖片筆數。匯出失敗時不會動到本機資料。
+來源位址可用環境變數 `SRC_HOST`、`SRC_PORT`、`SRC_USER`、`SRC_DB` 覆寫。
 
-## 6. 切換前驗證（用 hosts 檔指向新 IP）
+手上已有 dump 檔時改用 `./restore.sh backups/<檔名>.dump`。
 
-在自己電腦的 `/etc/hosts` 加一行 `<VPS IP> nkd.tw www.nkd.tw`，然後：
+## 6. 切換前驗證（只開放 API 網域）
 
-- 開首頁、商品圖片顯示正常
-- 登入、下一張測試單、後台看得到
-- Resend 通知信有寄出
-- 完成後把 hosts 那行移除
+切換前 `nkd.tw`、`www` 的 DNS 還指向舊主機，Let's Encrypt 驗證不會過，所以**不能**用 hosts 檔預先驗證前端，也不要用完整的 Caddyfile 啟動（會不斷申請失敗並累積到頻率上限）。
+
+預演時只開 API 網域：
+
+```bash
+echo 'CADDYFILE=./Caddyfile.api-only' >> .env
+docker compose -f docker-compose.prod.yml up -d caddy
+```
+
+然後確認 `https://api.nkd.tw/health`、商品 API、圖片端點與 CORS。
+注意此時資料庫是真實客戶資料且寄信功能啟用，測試只用自己的帳號。
 
 ## 7. 正式切換
 
-1. 挑訂單少的時段，先在 Zeabur 暫停 api 服務（避免切換期間產生新單）。
-2. 重做第 5 步（最終 dump 與還原）。
-3. 到 ix1000 把 `@`、`www` 改指向 VPS IP。
-4. `dig +short nkd.tw` 看到新 IP 後，重跑第 6 步的驗證。
-5. Zeabur 專案保留 1 到 2 週再刪。
+1. 挑訂單少的時段，先在 Zeabur 暫停後端服務（避免切換期間產生新單）；PostgreSQL 服務保持運作。
+2. 重跑第 5 步的 `./migrate-from-zeabur.sh`，取得最新資料。
+3. 到 Cloudmax 把 `nkd.tw` 的 A 記錄改指向 VPS IP，並新增 `www` 的 A 記錄。
+4. 權威 DNS（`dig +short nkd.tw @ns1.ix1000.com`）回新 IP 後，移除 `.env` 的 `CADDYFILE=` 那一行並 `docker compose -f docker-compose.prod.yml up -d caddy`，換回完整設定。
+5. 驗證首頁、登入、下單、通知信。
+6. Zeabur 專案保留 1 到 2 週再刪。
 
 ## 8. 備份
 

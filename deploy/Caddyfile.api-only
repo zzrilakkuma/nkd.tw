@@ -1,0 +1,17 @@
+# 預演用：只開放 API 網域。
+# 正式切換前 nkd.tw / www 的 DNS 還指向舊主機，Let's Encrypt 驗證不會過，
+# 若用完整的 Caddyfile 會不斷申請失敗並累積到頻率上限。
+# 使用方式：在 .env 加上 CADDYFILE=./Caddyfile.api-only；切換當天移除該行。
+{
+	email {$ACME_EMAIL}
+}
+
+{$API_DOMAIN} {
+	encode gzip zstd
+	reverse_proxy api:8000 {
+		header_up X-Real-IP {remote_host}
+	}
+	request_body {
+		max_size 5MB
+	}
+}

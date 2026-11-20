@@ -17,7 +17,8 @@ services:
       API_DOMAIN: ${API_DOMAIN}
       ACME_EMAIL: ${ACME_EMAIL}
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # 預演時可在 .env 設 CADDYFILE=./Caddyfile.api-only，只開放 API 網域
+      - ${CADDYFILE:-./Caddyfile}:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
@@ -62,8 +63,8 @@ services:
         condition: service_healthy
 
   postgres:
-    # 請與 Zeabur 上的 PostgreSQL major 版本一致（pg_restore 才不會踩到相容問題）
-    image: postgres:${POSTGRES_VERSION:-16}
+    # 需與來源資料庫的 major 版本一致或更新（Zeabur 為 18），pg_restore 才不會踩到相容問題
+    image: postgres:${POSTGRES_VERSION:-18}
     container_name: hookah-postgres
     restart: unless-stopped
     environment:
@@ -72,7 +73,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       TZ: Asia/Taipei
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # PostgreSQL 18 起官方映像把資料放在 /var/lib/postgresql/<版本>/docker，
+      # 所以掛載點是上層目錄；此設定僅適用 18 以上
+      - postgres_data:/var/lib/postgresql
       - ./backups:/backups
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
