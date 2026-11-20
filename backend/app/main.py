@@ -68,30 +68,25 @@ async def startup_event():
     except Exception as e:
         print(f"⚠️ Migration warning (may be safe to ignore): {e}")
 
-    # P5：背景排程 — 定期將逾期未付款訂單標記為已逾期並釋放保留庫存
-    # P6：同時清理超過保留期限（3 個月）的操作紀錄
-    async def expiry_sweeper():
-        from app.services.order_expiry import expire_overdue_orders
+    # P6：背景排程 — 定期清理超過保留期限（3 個月）的操作紀錄
+    async def cleanup_sweeper():
         from app.services.audit import cleanup_old_logs
         while True:
             try:
                 if SessionLocal is not None:
                     db = SessionLocal()
                     try:
-                        count = expire_overdue_orders(db)
-                        if count:
-                            print(f"⌛ 已將 {count} 筆逾期未付款訂單標記為已逾期並釋放庫存")
                         removed = cleanup_old_logs(db)
                         if removed:
                             print(f"🧹 已清理 {removed} 筆逾 3 個月的操作紀錄")
                     finally:
                         db.close()
             except Exception as e:
-                print(f"⚠️ 逾期掃描失敗（下次再試）: {e}")
+                print(f"⚠️ 操作紀錄清理失敗（下次再試）: {e}")
             await asyncio.sleep(settings.EXPIRY_SWEEP_INTERVAL_SECONDS)
 
-    asyncio.create_task(expiry_sweeper())
-    print(f"⏲️  逾期掃描已啟動（每 {settings.EXPIRY_SWEEP_INTERVAL_SECONDS} 秒；付款期限 {settings.PAYMENT_DEADLINE_HOURS} 小時）")
+    asyncio.create_task(cleanup_sweeper())
+    print(f"⏲️  操作紀錄清理排程已啟動（每 {settings.EXPIRY_SWEEP_INTERVAL_SECONDS} 秒）")
 
     print("✅ Application started successfully")
 

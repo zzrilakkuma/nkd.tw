@@ -7,6 +7,7 @@ import { deliveryLabel } from '../../utils/delivery';
 import { ordersAPI } from '../../services/api';
 import AdminProducts from './AdminProducts';
 import AdminUsers from './AdminUsers';
+import AdminCustomers from './AdminCustomers';
 import AdminPickupLocations from './AdminPickupLocations';
 import AdminAuditLogs from './AdminAuditLogs';
 import AdminOrderDrawer from './AdminOrderDrawer';
@@ -15,7 +16,7 @@ import BrandRevenue, { brandSharesOfOrder } from './BrandRevenue';
 import '../../styles/admin.css';
 import '../../styles/profile.css';
 
-type AdminTab = 'orders' | 'products' | 'accounts' | 'pickups' | 'audit';
+type AdminTab = 'orders' | 'products' | 'customers' | 'accounts' | 'pickups' | 'audit';
 
 export interface ApiOrderItem {
   id: number;
@@ -353,6 +354,12 @@ const AdminDashboard: React.FC = () => {
             商品管理
           </button>
           <button
+            className={`admin-tab ${activeTab === 'customers' ? 'active' : ''}`}
+            onClick={() => setActiveTab('customers')}
+          >
+            客戶檔案
+          </button>
+          <button
             className={`admin-tab ${activeTab === 'accounts' ? 'active' : ''}`}
             onClick={() => setActiveTab('accounts')}
           >
@@ -373,6 +380,8 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {activeTab === 'products' && <AdminProducts />}
+
+        {activeTab === 'customers' && <AdminCustomers />}
 
         {activeTab === 'accounts' && <AdminUsers />}
 

@@ -60,6 +60,18 @@ class AdminUserCreate(CompanyInfo):
 class AdminUserUpdate(CompanyInfo):
     """管理員更新客戶帳號資料 / 啟用停用"""
     is_active: Optional[bool] = None
+    email: Optional[EmailStr] = None
+    username: Optional[str] = None
+    saved_address: Optional[List[SavedAddress]] = None
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v = v.strip()
+            if not v:
+                raise ValueError("帳號名稱不可為空")
+        return v
 
 
 class UserResponse(UserBase):
@@ -83,6 +95,32 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
+
+
+class CustomerSummary(UserResponse):
+    """客戶檔案列表：帳號資料 + 訂單統計"""
+    order_count: int = 0
+    completed_count: int = 0
+    completed_total: float = 0
+    last_order_at: Optional[datetime] = None
+
+
+class CustomerOrderBrief(BaseModel):
+    id: str
+    status: str
+    payment_type: str
+    delivery_method: Optional[str] = None
+    total_amount: float
+    created_at: datetime
+    completed_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class CustomerDetail(CustomerSummary):
+    """單一客戶檔案：含歷史訂單"""
+    orders: List[CustomerOrderBrief] = []
 
 
 class Token(BaseModel):

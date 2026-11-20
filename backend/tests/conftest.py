@@ -8,6 +8,8 @@ import os
 os.environ["DATABASE_URL"] = "sqlite:///./test_suite.db"   # 強制覆寫，避免誤連開發庫
 os.environ["SECRET_KEY"] = "test-secret"
 os.environ["FRONTEND_URL"] = "http://localhost:3000"
+os.environ["RESEND_API_KEY"] = ""   # 強制停用寄信，避免測試真的打 Resend 燒額度
+os.environ["ADMIN_NOTIFY_EMAIL"] = ""
 
 import uuid  # noqa: E402
 import pytest  # noqa: E402

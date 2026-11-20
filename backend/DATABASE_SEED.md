@@ -20,21 +20,6 @@
 
 ### 🛍️ 商品数据
 
-#### DarkSide 系列水烟草（10款）
-- DarkSide Bergamonstr - 760元
-- DarkSide Cosmo Flower - 760元
-- DarkSide Dark Passion - 760元
-- DarkSide Dark Supra - 760元
-- DarkSide Lemon Blast - 760元
-- DarkSide Needls - 760元
-- DarkSide Pomelow - 760元
-- DarkSide Red Alert - 760元
-- DarkSide Supernova - 760元
-- DarkSide Virgin Peach - 760元
-
-#### Kalee 系列水烟草（1款）
-- Kalee Grapefruit - 580元
-
 #### 配件（2款）
 - 椰殼碳 - 2000元
 - MOD 矽膠水煙管 - 650元

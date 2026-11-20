@@ -78,7 +78,7 @@ class StatusChange(BaseModel):
 class VerifyOrder(BaseModel):
     """管理員核對完成：輸入運費（可含折扣）並鎖定金額。
 
-    payment_type=normal：進入等待付款（48h 倒數）
+    payment_type=normal：進入等待付款
     payment_type=monthly：月結核准，視同已付款，直接進入準備出貨並實扣庫存
     """
     shipping_fee: float

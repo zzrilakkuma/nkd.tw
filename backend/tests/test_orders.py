@@ -1,9 +1,8 @@
-"""P2–P5 訂單流程：狀態機、配送、核對運費、庫存保留/實扣/釋放、48h 逾期。"""
+"""P2–P5 訂單流程：狀態機、配送、核對運費、庫存保留/實扣/釋放。"""
 from datetime import datetime, timedelta
 
 from app.core.database import SessionLocal
 from app.models.order import Order
-from app.services.order_expiry import expire_overdue_orders
 from tests.conftest import get_sku, HOME_SHIPPING
 
 
@@ -22,8 +21,8 @@ class TestCreateOrder:
 
         assert order["status"] == "pending_review"
         assert order["subtotal"] == 1520          # 金額由後端計算
-        assert order["shipping_fee"] == 100       # 宅配預設運費
-        assert order["total_amount"] == 1620
+        assert order["shipping_fee"] == 120       # 宅配預設運費
+        assert order["total_amount"] == 1640
         assert order["locked"] is False
         assert order["items"][0]["sku_id"] == sku["id"]
 
@@ -84,7 +83,7 @@ class TestVerifyAndTransitions:
         assert body["shipping_fee"] == 120
         assert body["total_amount"] == 880       # 760 + 120，鎖定
         assert body["locked"] is True
-        assert body["payment_deadline"] is not None
+        assert body["payment_deadline"] is None      # 不再設定付款期限
 
     def test_verify_monthly_skips_payment_and_commits_stock(self, client, admin_headers,
                                                             make_product, make_order):
@@ -240,35 +239,21 @@ class TestInventoryLedger:
         assert res.status_code == 400
 
 
-class TestExpiry:
-    def test_sweeper_expires_overdue_and_releases(self, client, admin_headers,
-                                                  make_product, make_order):
+class TestNoAutoExpiry:
+    def test_pay_allowed_after_legacy_deadline_passed(self, client, admin_headers, user_headers,
+                                                      make_product, make_order):
+        """已取消自動逾期：舊訂單即使留有過期的付款期限，仍可付款且庫存保留不變。"""
         product, sku = make_product(stock=10)
         order = make_order(sku["id"], quantity=2)
-        oid = order["id"]
-        client.post(f"/api/v1/orders/{oid}/verify", headers=admin_headers, json={"shipping_fee": 0})
-
-        _set_deadline_past(oid)
-        db = SessionLocal()
-        count = expire_overdue_orders(db)
-        db.close()
-        assert count == 1
-
-        assert client.get(f"/api/v1/orders/{oid}", headers=admin_headers).json()["status"] == "expired"
-        fresh = get_sku(client, product["id"], sku["id"])
-        assert (fresh["stock"], fresh["reserved"], fresh["available"]) == (10, 0, 10)
-
-    def test_pay_after_deadline_blocked_and_marks_expired(self, client, admin_headers, user_headers,
-                                                          make_product, make_order):
-        _, sku = make_product()
-        order = make_order(sku["id"])
         oid = order["id"]
         client.post(f"/api/v1/orders/{oid}/verify", headers=admin_headers, json={"shipping_fee": 0})
         _set_deadline_past(oid)
 
         res = client.post(f"/api/v1/orders/{oid}/pay", headers=user_headers, json={"last5Digits": "33333"})
-        assert res.status_code == 400
-        assert client.get(f"/api/v1/orders/{oid}", headers=admin_headers).json()["status"] == "expired"
+        assert res.status_code == 200
+        assert res.json()["status"] == "pending_confirm"
+        fresh = get_sku(client, product["id"], sku["id"])
+        assert (fresh["stock"], fresh["reserved"], fresh["available"]) == (10, 2, 8)
 
 
 class TestV12InvoiceDiscountItems:
@@ -384,7 +369,7 @@ class TestRollback:
         body = res.json()
         assert body["status"] == "pending_payment"
         assert body["payment_info"] is None and body["paid_at"] is None
-        assert body["payment_deadline"] is not None
+        assert body["payment_deadline"] is None
 
         res = self._rollback(client, admin_headers, oid)
         body = res.json()
@@ -447,3 +432,27 @@ class TestOrderItemBrand:
         orders = client.get("/api/v1/orders/admin/all", headers=admin_headers).json()
         item = next(o for o in orders if o["id"] == oid)["items"][0]
         assert item["product"]["brand"] == {"id": bid, "name": "Tangiers"}
+
+
+class TestNegativeDiscount:
+    """折扣可為負數＝加價。"""
+
+    def test_negative_discount_adds_to_total(self, client, admin_headers, make_product, make_order):
+        _, sku = make_product(price=500, stock=10)
+        oid = make_order(sku["id"], quantity=2)["id"]
+
+        res = client.put(f"/api/v1/orders/{oid}/items", headers=admin_headers, json={
+            "items": [{"sku_id": sku["id"], "quantity": 2}], "discount": -50,
+        })
+        assert res.status_code == 200
+        assert res.json()["discount"] == -50
+
+        res = client.post(f"/api/v1/orders/{oid}/verify", headers=admin_headers,
+                          json={"shipping_fee": 100, "discount": -200, "payment_type": "monthly"})
+        assert res.status_code == 200
+        assert res.json()["total_amount"] == 1300   # 1000 + 加價 200 + 運費 100
+
+        res = client.put(f"/api/v1/orders/{oid}/amount", headers=admin_headers,
+                         json={"shipping_fee": 0, "discount": -300})
+        assert res.status_code == 200
+        assert res.json()["total_amount"] == 1300   # 1000 + 加價 300

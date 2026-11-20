@@ -13,7 +13,7 @@ export interface BrandShare {
 }
 
 /**
- * 單筆訂單依品牌拆分營業額：商品金額扣除「按比例分攤」的訂單折扣（運費不計入品牌），
+ * 單筆訂單依品牌拆分營業額：商品金額扣除「按比例分攤」的訂單折扣（負數折扣＝加價，同樣分攤；運費不計入品牌），
  * 各品牌加總 + 運費 = 訂單總額。
  */
 export const brandSharesOfOrder = (order: ApiOrder): Map<string, BrandShare> => {
@@ -71,7 +71,7 @@ const BrandRevenue: React.FC<Props> = ({ orders, selectedBrand, onSelect }) => {
         <div>
           <h4>品牌營業額</h4>
           <span className="revenue-chart-sub">
-            點選品牌可篩選上方趨勢圖・訂單折扣按比例分攤、運費另計・依商品目前所屬品牌
+            點選品牌可篩選上方趨勢圖・訂單折扣／加價按比例分攤、運費另計・依商品目前所屬品牌
           </span>
         </div>
         {selectedBrand && (

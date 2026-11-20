@@ -98,8 +98,28 @@ export const adminUsersAPI = {
     return response.data; // { user, temp_password }
   },
 
-  update: async (userId: string, data: { is_active?: boolean; company_name?: string; contact_name?: string; contact_phone?: string; tax_id?: string }) => {
+  update: async (userId: string, data: {
+    is_active?: boolean;
+    email?: string;
+    username?: string;
+    company_name?: string;
+    contact_name?: string;
+    contact_phone?: string;
+    tax_id?: string;
+    saved_address?: any[];
+  }) => {
     const response = await api.patch(`/admin/users/${userId}`, data);
+    return response.data;
+  },
+
+  // 客戶檔案：列表（含訂單統計）與單一客戶詳情（含歷史訂單）
+  listCustomers: async (q?: string) => {
+    const response = await api.get('/admin/users/customers', { params: q ? { q } : undefined });
+    return response.data;
+  },
+
+  getCustomer: async (userId: string) => {
+    const response = await api.get(`/admin/users/${userId}`);
     return response.data;
   },
 };
