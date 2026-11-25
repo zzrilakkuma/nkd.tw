@@ -1,0 +1,35 @@
+name: Deploy to VPS
+
+# push 到 main 後自動部署到 Hostinger VPS；也可在 Actions 頁面手動觸發
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 同一時間只跑一個部署，後來的排隊等前一個結束
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Run deploy.sh on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # 這把金鑰在 VPS 上被限制為只能執行 deploy/deploy.sh（git pull、build、重啟、健康檢查）
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes \
+              -o StrictHostKeyChecking=yes -o ServerAliveInterval=30 \
+              "root@${VPS_HOST}"
